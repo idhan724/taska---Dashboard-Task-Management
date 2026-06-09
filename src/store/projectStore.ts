@@ -1,0 +1,170 @@
+import { create } from "zustand";
+import { getMockProjectByWorkspace, mockProjects } from "@/data/staticData";
+import { isLiveMode, supabase } from "@/lib/supabase";
+import type { Project, ProjectFilters, ProjectStatus } from "@/types";
+
+const defaultFiltersProjects: ProjectFilters = {
+  search: "",
+  status: "all",
+};
+
+interface ProjectStore {
+  projects: Project[];
+  filters: ProjectFilters;
+  isLoading: boolean;
+  error: string | null;
+  fetchProjects: (workspaceId: string) => Promise<void>;
+  addProject: (
+    project: Omit<Project, "id" | "created_at" | "updated_at">,
+  ) => Promise<void>;
+  updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  setFilter: (filters: Partial<ProjectFilters>) => void;
+  resetFilters: () => void;
+  getFilteredProjects: () => Project[];
+  getProjectByStatus: (status: ProjectStatus) => Project[];
+}
+
+export const useProjectStore = create<ProjectStore>((set, get) => ({
+  projects: mockProjects,
+  filters: defaultFiltersProjects,
+  isLoading: false,
+  error: null,
+  fetchProjects: async (workspaceId) => {
+    if (!isLiveMode) {
+      const { projects } = get();
+      const filtered = getMockProjectByWorkspace(workspaceId, projects);
+      set({ projects: filtered });
+      return;
+    }
+
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("workspace_id", workspaceId);
+
+      if (error) throw error;
+      set({ projects: (data as unknown as Project[]) || [] });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed load project";
+      set({ error: message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  addProject: async (project) => {
+    set({ error: null });
+    if (!isLiveMode) {
+      const newProject: Project = {
+        ...project,
+        id: `t${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+      set((state) => ({ projects: [newProject, ...state.projects] }));
+      return;
+    }
+
+    try {
+      const { task_count, completed_count, ...insertData } = project;
+      const { data, error } = await supabase
+        .from("projects")
+        .insert(insertData)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      set((state) => ({
+        projects: [...state.projects, data as unknown as Project],
+      }));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to add project";
+      set({ error: message });
+      throw err;
+    }
+  },
+  updateProject: async (id, updates) => {
+    set({ error: null });
+    if (!isLiveMode) {
+      set((state) => ({
+        projects: state.projects.map((t) =>
+          t.id === id ? { ...t, ...updates } : t,
+        ),
+      }));
+      return;
+    }
+
+    try {
+      const { task_count, completed_count, ...updatesData } = updates;
+      const { data, error } = await supabase
+        .from("projects")
+        .update(updatesData)
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      set((state) => ({
+        projects: state.projects.map((t) =>
+          t.id === id ? (data as unknown as Project) : t,
+        ),
+      }));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update project";
+      set({ error: message });
+      throw err;
+    }
+  },
+  deleteProject: async (id) => {
+    set({ error: null });
+    if (!isLiveMode) {
+      set((state) => ({
+        projects: state.projects.filter((t) => t.id !== id),
+      }));
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("projects").delete().eq("id", id);
+      if (error) throw error;
+      set((state) => ({ projects: state.projects.filter((t) => t.id !== id) }));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete project";
+      set({ error: message });
+      throw err;
+    }
+  },
+  setFilter: (filters) =>
+    set((state) => ({ filters: { ...state.filters, ...filters } })),
+
+  resetFilters: () => set({ filters: defaultFiltersProjects }),
+
+  getFilteredProjects: () => {
+    const { projects, filters } = get();
+
+    return projects.filter((project) => {
+      if (
+        filters.search &&
+        !project.name.toLowerCase().includes(filters.search.toLowerCase())
+      ) {
+        return false;
+      }
+      if (filters.status !== "all" && project.status !== filters.status) {
+        return false;
+      }
+      return true;
+    });
+  },
+
+  getProjectByStatus: (status) => {
+    return get()
+      .getFilteredProjects()
+      .filter((t) => t.status === status);
+  },
+}));
