@@ -1,61 +1,53 @@
-export type Priority = 'low' | 'medium' | 'high'
-export type Status = 'todo' | 'in-progress' | 'done'
-export type WorkspaceRole = 'owner' | 'member'
+import type { Tables } from "@/types/supabase";
 
-export interface Profile {
-    id: string
-    full_name: string
-    created_at: string
-}
+export type Priority = "low" | "medium" | "high";
+export type Status = "todo" | "in-progress" | "done";
+export type WorkspaceRole = "owner" | "member";
+export type ProjectStatus = "active" | "on_hold" | "completed";
 
-export interface Workspace {
-    id: string
-    workspace_id: string
-    description: string | null
-    owner_id: string
-    created_at: string
-}
+export type Profile = Tables<"users">;
+export type Workspace = Tables<"workspaces">;
 
-export interface WorkspaceMember {
-    id: string;
-    workspace_id: string
-    user_id: string
-    role: WorkspaceRole
-    invited_by: string | null
-    joined_at: string
-    profile: Profile
-}
+export type WorkspaceMember = Omit<Tables<"workspace_members">, "role"> & {
+  role: WorkspaceRole;
+  profile: Profile;
+};
 
-export interface WorkspaceInvite {
-    id: string
-    workspace_id: string
-    email: string
-    role: 'member'
-    token: string
-    invited_by: string
-    expires_at: string
-    accepted_at: string | null
-}
+export type WorkspaceInvite = Tables<"workspace_invites">;
 
-export interface Task {
-    id: string
-    workspace_id: string
-    created_by: string
-    assigned_to: string | null
-    title: string
-    description: string | null
-    status: Status
-    priority: Priority
-    due_date: string | null
-    position: number
-    created_at: string
-    updated_at: string
-    assignee?: Profile
-}
+export type Project = Omit<Tables<"projects">, "status"> & {
+  status: ProjectStatus;
+  task_count?: number;
+  completed_count?: number;
+};
+
+export type Task = Omit<Tables<"tasks">, "status" | "priority"> & {
+  status: Status;
+  priority: Priority;
+  projects?: Project;
+};
 
 export interface TaskFilters {
-    search: string
-    priority: Priority | 'all'
-    assignee: string | 'all'
-    dueDateRange: 'all' | 'today' | 'this-week' | 'overdue'
+  search: string;
+  priority: Priority | "all";
+  dueDateRange: "all" | "today" | "this-week" | "overdue";
+}
+
+export interface ProjectFilters {
+  search: string;
+  status: ProjectStatus | "all";
+}
+
+export interface Stats {
+  totalProjects: number;
+  totalTasks: number;
+  todoCount: number;
+  inProgressCount: number;
+  doneCount: number;
+  overdueCount: number;
+  doneThisWeek: number;
+  activeCount: number;
+  onHoldCount: number;
+  completedCount: number;
+  memberCount: number;
 }
