@@ -17,8 +17,6 @@ export type WorkspaceInvite = Tables<"workspace_invites">;
 
 export type Project = Omit<Tables<"projects">, "status"> & {
   status: ProjectStatus;
-  task_count?: number;
-  completed_count?: number;
 };
 
 export type Task = Omit<Tables<"tasks">, "status" | "priority"> & {
@@ -41,13 +39,13 @@ export interface ProjectFilters {
 export interface Stats {
   totalProjects: number;
   totalTasks: number;
-  todoCount: number;
-  inProgressCount: number;
-  doneCount: number;
-  overdueCount: number;
+  totalMember: number;
+  todo: number;
+  inProgress: number;
+  done: number;
+  overdue: number;
   doneThisWeek: number;
-  activeCount: number;
-  onHoldCount: number;
-  completedCount: number;
-  memberCount: number;
+  active: number;
+  onHold: number;
+  completed: number;
 }
