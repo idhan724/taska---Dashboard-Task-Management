@@ -14,9 +14,7 @@ interface ProjectStore {
   isLoading: boolean;
   error: string | null;
   fetchProjects: (workspaceId: string) => Promise<void>;
-  addProject: (
-    project: Omit<Project, "id" | "created_at" | "updated_at">,
-  ) => Promise<void>;
+  addProject: (project: Omit<Project, "id" | "created_at">) => Promise<void>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   setFilter: (filters: Partial<ProjectFilters>) => void;
@@ -26,14 +24,13 @@ interface ProjectStore {
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
-  projects: mockProjects,
+  projects: [],
   filters: defaultFiltersProjects,
   isLoading: false,
   error: null,
   fetchProjects: async (workspaceId) => {
     if (!isLiveMode) {
-      const { projects } = get();
-      const filtered = getMockProjectByWorkspace(workspaceId, projects);
+      const filtered = getMockProjectByWorkspace(workspaceId, mockProjects);
       set({ projects: filtered });
       return;
     }
@@ -62,14 +59,13 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         ...project,
         id: `t${Date.now()}`,
         created_at: new Date().toISOString(),
-        updated_at: null,
       };
       set((state) => ({ projects: [newProject, ...state.projects] }));
       return;
     }
 
     try {
-      const { task_count, completed_count, ...insertData } = project;
+      const { ...insertData } = project;
       const { data, error } = await supabase
         .from("projects")
         .insert(insertData)
@@ -99,7 +95,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
 
     try {
-      const { task_count, completed_count, ...updatesData } = updates;
+      const { ...updatesData } = updates;
       const { data, error } = await supabase
         .from("projects")
         .update(updatesData)
