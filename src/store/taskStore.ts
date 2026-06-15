@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { isLiveMode, supabase } from "@/lib/supabase";
 import type { Task, Status, TaskFilters } from "@/types";
-import { getMockTasksByProjects, mockTasks } from "@/data/staticData";
+import {
+  getMockTasksByProjects,
+  getMockTasksByWorkspace,
+  mockTasks,
+} from "@/data/staticData";
 
 const defaultFiltersTasks: TaskFilters = {
   search: "",
@@ -15,6 +19,7 @@ interface TaskStore {
   isLoading: boolean;
   error: string | null;
   fetchTasks: (workspaceId: string) => Promise<void>;
+  fetchTasksByProject: (projectId: string) => Promise<void>;
   addTask: (
     task: Omit<Task, "id" | "created_at" | "updated_at">,
   ) => Promise<void>;
@@ -28,15 +33,44 @@ interface TaskStore {
 }
 
 export const useTaskStore = create<TaskStore>((set, get) => ({
-  tasks: mockTasks,
+  tasks: [],
   filters: defaultFiltersTasks,
   isLoading: false,
   error: null,
 
-  fetchTasks: async (projectId) => {
+  fetchTasks: async (workspaceId) => {
     if (!isLiveMode) {
-      const { tasks } = get();
-      const filtered = getMockTasksByProjects(projectId, tasks);
+      const filtered = getMockTasksByWorkspace(workspaceId, mockTasks);
+      set({ tasks: filtered });
+      return;
+    }
+
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select(
+          `
+          *,
+          projects(*)
+        `,
+        )
+        .eq("workspace_id", workspaceId)
+        .order("position", { ascending: true });
+
+      if (error) throw error;
+      set({ tasks: (data as unknown as Task[]) || [] });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Gagal memuat tasks";
+      set({ error: message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchTasksByProject: async (projectId) => {
+    if (!isLiveMode) {
+      const filtered = getMockTasksByProjects(projectId, mockTasks);
       set({ tasks: filtered });
       return;
     }
