@@ -123,6 +123,9 @@ export const mockMembers: WorkspaceMember[] = [
   },
 ];
 
+const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
 export const mockProjects: Project[] = [
   {
     id: "p1",
@@ -131,10 +134,7 @@ export const mockProjects: Project[] = [
     description: "Complete UI overhaul of the main dashboard",
     status: "active",
     color: "#7c3aed",
-    created_at: "2024-11-01",
-    updated_at: null,
-    task_count: 24,
-    completed_count: 14,
+    created_at: daysAgo(30),
   },
   {
     id: "p2",
@@ -143,10 +143,7 @@ export const mockProjects: Project[] = [
     description: "Integrate third-party payment and auth APIs",
     status: "active",
     color: "#0d9488",
-    created_at: "2024-11-10",
-    updated_at: null,
-    task_count: 18,
-    completed_count: 7,
+    created_at: daysAgo(28),
   },
   {
     id: "p3",
@@ -155,22 +152,16 @@ export const mockProjects: Project[] = [
     description: "React Native mobile companion app",
     status: "on_hold",
     color: "#ea580c",
-    created_at: "2024-10-15",
-    updated_at: null,
-    task_count: 32,
-    completed_count: 12,
+    created_at: daysAgo(35),
   },
   {
     id: "p4",
-    workspace_id: "ws-002",
+    workspace_id: "ws-003",
     name: "Analytics Dashboard",
     description: "Business intelligence reporting suite",
     status: "active",
     color: "#d97706",
-    created_at: "2024-12-01",
-    updated_at: null,
-    task_count: 15,
-    completed_count: 3,
+    created_at: daysAgo(20),
   },
 ];
 
@@ -188,9 +179,9 @@ export const mockTasks: Task[] = [
       .toISOString()
       .split("T")[0],
     position: 1,
-    created_at: "2024-02-01T08:00:00Z",
-    updated_at: "2024-02-01T08:00:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(24),
+    updated_at: daysAgo(24),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
   {
     id: "task-002",
@@ -205,9 +196,9 @@ export const mockTasks: Task[] = [
       .toISOString()
       .split("T")[0],
     position: 2,
-    created_at: "2024-02-02T09:00:00Z",
-    updated_at: "2024-02-02T09:00:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(22),
+    updated_at: daysAgo(22),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
   {
     id: "task-003",
@@ -219,9 +210,9 @@ export const mockTasks: Task[] = [
     priority: "low",
     due_date: null,
     position: 3,
-    created_at: "2024-02-03T10:00:00Z",
-    updated_at: "2024-02-03T10:00:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(20),
+    updated_at: daysAgo(20),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
   {
     id: "task-004",
@@ -236,9 +227,9 @@ export const mockTasks: Task[] = [
       .toISOString()
       .split("T")[0],
     position: 4,
-    created_at: "2024-02-04T11:00:00Z",
-    updated_at: "2024-02-04T11:00:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(18),
+    updated_at: daysAgo(18),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
   {
     id: "task-005",
@@ -253,14 +244,14 @@ export const mockTasks: Task[] = [
       .toISOString()
       .split("T")[0],
     position: 1,
-    created_at: "2024-01-28T08:00:00Z",
-    updated_at: "2024-02-05T10:30:00Z",
-    projects: mockProjects[1],
+    created_at: daysAgo(15),
+    updated_at: daysAgo(4),
+    projects: mockProjects.find((p) => p.id === "p2"),
   },
   {
     id: "task-006",
     workspace_id: "ws-001",
-    project_id: "p3",
+    project_id: "p2",
     title: "Desain mobile responsif Kanban Board",
     description:
       "Pastikan kanban bisa dipakai di layar 375px ke atas dengan UX yang nyaman",
@@ -270,9 +261,9 @@ export const mockTasks: Task[] = [
       .toISOString()
       .split("T")[0],
     position: 2,
-    created_at: "2024-01-30T09:00:00Z",
-    updated_at: "2024-02-05T14:00:00Z",
-    projects: mockProjects[2],
+    created_at: daysAgo(13),
+    updated_at: daysAgo(2),
+    projects: mockProjects.find((p) => p.id === "p2"),
   },
   {
     id: "task-007",
@@ -286,9 +277,9 @@ export const mockTasks: Task[] = [
       .toISOString()
       .split("T")[0],
     position: 3,
-    created_at: "2024-02-01T13:00:00Z",
-    updated_at: "2024-02-05T15:30:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(12),
+    updated_at: daysAgo(1),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
   {
     id: "task-008",
@@ -298,11 +289,13 @@ export const mockTasks: Task[] = [
     description: "Inisialisasi project dengan semua dependency yang dibutuhkan",
     status: "done",
     priority: "high",
-    due_date: "2024-01-20",
+    due_date: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
     position: 1,
-    created_at: "2024-01-15T08:00:00Z",
-    updated_at: "2024-01-19T17:00:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(26),
+    updated_at: daysAgo(23),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
   {
     id: "task-009",
@@ -312,11 +305,13 @@ export const mockTasks: Task[] = [
     description: null,
     status: "done",
     priority: "medium",
-    due_date: "2024-01-22",
+    due_date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
     position: 2,
-    created_at: "2024-01-18T09:00:00Z",
-    updated_at: "2024-01-22T16:00:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(25),
+    updated_at: daysAgo(21),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
   {
     id: "task-010",
@@ -326,11 +321,13 @@ export const mockTasks: Task[] = [
     description: "Buat semua tabel database dan konfigurasi Row Level Security",
     status: "done",
     priority: "high",
-    due_date: "2024-01-25",
+    due_date: new Date(Date.now() - 17 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
     position: 3,
-    created_at: "2024-01-20T10:00:00Z",
-    updated_at: "2024-01-25T18:00:00Z",
-    projects: mockProjects[1],
+    created_at: daysAgo(21),
+    updated_at: daysAgo(17),
+    projects: mockProjects.find((p) => p.id === "p2"),
   },
   {
     id: "task-011",
@@ -340,11 +337,13 @@ export const mockTasks: Task[] = [
     description: null,
     status: "done",
     priority: "medium",
-    due_date: "2024-01-26",
+    due_date: new Date(Date.now() - 16 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
     position: 4,
-    created_at: "2024-01-21T11:00:00Z",
-    updated_at: "2024-01-26T14:00:00Z",
-    projects: mockProjects[0],
+    created_at: daysAgo(19),
+    updated_at: daysAgo(2),
+    projects: mockProjects.find((p) => p.id === "p1"),
   },
 ];
 
@@ -358,39 +357,8 @@ export const getMockProjectByWorkspace = (
   project: Project[],
 ) => project.filter((t) => t.workspace_id === workspaceId);
 
+export const getMockTasksByWorkspace = (workspaceId: string, tasks: Task[]) =>
+  tasks.filter((t) => t.workspace_id === workspaceId);
+
 export const getMockTasksByProjects = (projectId: string, tasks: Task[]) =>
   tasks.filter((t) => t.project_id === projectId);
-
-export const getMockStats = (
-  workspaceId: string,
-  projectId: string,
-  tasks: Task[],
-  projects: Project[],
-  members: WorkspaceMember[],
-) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
-
-  return {
-    totalProjects: getMockProjectByWorkspace(workspaceId, projects),
-    totalTasks: getMockTasksByProjects(projectId, tasks).length,
-    todoCount: tasks.filter((t) => t.status === "todo").length,
-    inProgressCount: tasks.filter((t) => t.status === "in-progress").length,
-    doneCount: tasks.filter((t) => t.status === "done").length,
-    overdueCount: tasks.filter(
-      (t) => t.due_date && new Date(t.due_date) < today && t.status !== "done",
-    ).length,
-    doneThisWeek: tasks.filter(
-      (t) =>
-        t.status === "done" &&
-        t.updated_at &&
-        new Date(t.updated_at) >= startOfWeek,
-    ).length,
-    activeCount: projects.filter((t) => t.status === "active"),
-    onHoldCount: projects.filter((t) => t.status === "on_hold"),
-    completedCount: projects.filter((t) => t.status === "completed"),
-    memberCount: getMockMembersByWorkspace(workspaceId, members).length,
-  };
-};
