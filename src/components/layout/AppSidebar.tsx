@@ -68,7 +68,10 @@ export default function AppSidebar() {
               value={workspaceId}
               onValueChange={(value) => {
                 const selected = workspaces.find((w) => w.id === value);
-                if (selected) setActiveWorkspace(selected);
+                if (selected) {
+                  setActiveWorkspace(selected);
+                  navigate(`/${value}`);
+                }
               }}
             >
               <SelectTrigger className="w-full max-w-48">
