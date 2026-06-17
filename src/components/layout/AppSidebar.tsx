@@ -8,6 +8,8 @@ import {
   Users,
   Folder,
   ChevronRight,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
 import { getInitials, getAvatarColor } from "@/lib/utils";
 import {
@@ -20,14 +22,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,28 +33,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { isLiveMode } from "@/lib/supabase";
+import { Avatar } from "@/components/ui/avatar";
 
 export default function AppSidebar() {
   const { workspaceId } = useParams();
-  const { workspaces, setActiveWorkspace } = useWorkspaceStore();
+  const { workspaces, activeWorkspace, setActiveWorkspace } =
+    useWorkspaceStore();
   const { profile, signOut } = useAuthStore();
   const navigate = useNavigate();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: `/${workspaceId}` },
-    { label: "Team", icon: Users, path: `/${workspaceId}/team` },
     { label: "projects", icon: Folder, path: `/${workspaceId}/projects` },
+    { label: "Team", icon: Users, path: `/${workspaceId}/team` },
     { label: "Settings", icon: Settings, path: `/${workspaceId}/settings` },
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border p-5">
+    <Sidebar collapsible="icon">
+      <SidebarHeader
+        className={`border-b border-sidebar-border ${isCollapsed ? "p-3" : "p-4"}`}
+      >
         <div className="flex items-center gap-2.5">
-          <img src="/favicon.svg" alt="icon" className="w-8 h-8" />
-          <div>
+          <img src="/favicon.svg" alt="icon" className="w-8 h-8 shrink-0" />
+          {!isCollapsed && (
             <span className="font-bold text-sm leading-tight block">Taska</span>
-          </div>
+          )}
         </div>
       </SidebarHeader>
 
@@ -64,27 +68,59 @@ export default function AppSidebar() {
         {workspaces.length > 1 && (
           <SidebarGroup>
             <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-            <Select
-              value={workspaceId}
-              onValueChange={(value) => {
-                const selected = workspaces.find((w) => w.id === value);
-                if (selected) {
-                  setActiveWorkspace(selected);
-                  navigate(`/${value}`);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full max-w-48">
-                <SelectValue placeholder="Select a workspace" />
-              </SelectTrigger>
-              <SelectContent>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  className="w-full"
+                  tooltip={activeWorkspace?.name ?? "Workspace"}
+                >
+                  <div
+                    className="w-4 h-4 rounded shrink-0"
+                    style={{
+                      backgroundColor: activeWorkspace?.name
+                        ? `hsl(${(activeWorkspace.name.charCodeAt(0) * 10) % 360}, 60%, 50%)`
+                        : "#888",
+                    }}
+                  />
+                  {!isCollapsed && (
+                    <>
+                      <span className="flex-1 truncate text-sm">
+                        {activeWorkspace?.name ?? "Select Workspace"}
+                      </span>
+                      <ChevronsUpDown
+                        size={14}
+                        className="shrink-0 text-muted-foreground"
+                      />
+                    </>
+                  )}
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" align="start" className="w-52">
                 {workspaces.map((ws) => (
-                  <SelectItem key={ws.id} value={ws.id}>
-                    {ws.name}
-                  </SelectItem>
+                  <DropdownMenuItem
+                    key={ws.id}
+                    onClick={() => {
+                      setActiveWorkspace(ws);
+                      navigate(`/${ws.id}`);
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <div
+                      className="w-3 h-3 rounded shrink-0"
+                      style={{
+                        backgroundColor: ws.name
+                          ? `hsl(${(ws.name.charCodeAt(0) * 10) % 360}, 60%, 50%)`
+                          : "#888",
+                      }}
+                    />
+                    <span className="text-sm">{ws.name}</span>
+                    {ws.id === workspaceId && (
+                      <Check size={14} className="text-primary shrink-0" />
+                    )}
+                  </DropdownMenuItem>
                 ))}
-              </SelectContent>
-            </Select>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarGroup>
         )}
 
@@ -93,7 +129,7 @@ export default function AppSidebar() {
           <SidebarMenu>
             {navItems.map(({ path, icon: Icon, label }) => (
               <SidebarMenuItem key={path}>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild tooltip={label}>
                   <NavLink
                     to={path}
                     end={path === "/"}
@@ -120,13 +156,13 @@ export default function AppSidebar() {
         <SidebarFooter className="border-t border-sidebar-border p-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${getAvatarColor(profile.full_name)}`}
+              <SidebarMenuButton size="lg" tooltip={profile.full_name}>
+                <Avatar
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(profile.full_name)}`}
                 >
                   {getInitials(profile.full_name)}
-                </div>
-                <div className="flex-1 min-w-0">
+                </Avatar>
+                <div>
                   <p className="text-sm font-medium truncate">
                     {profile.full_name}
                   </p>
@@ -134,25 +170,22 @@ export default function AppSidebar() {
                     {profile.email}
                   </p>
                 </div>
-              </div>
+                <ChevronsUpDown className="ml-auto size-4" />
+              </SidebarMenuButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() => navigate(`/${workspaceId}/settings`)}
-              >
-                <Settings />
-                Settings
-              </DropdownMenuItem>
-              {isLiveMode && (
+            {isLiveMode && (
+              <DropdownMenuContent side="right" align="end" className="w-48">
                 <DropdownMenuItem variant="destructive" onClick={signOut}>
                   <LogOut />
                   Log out
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
+              </DropdownMenuContent>
+            )}
           </DropdownMenu>
         </SidebarFooter>
       )}
+
+      <SidebarRail />
     </Sidebar>
   );
 }
