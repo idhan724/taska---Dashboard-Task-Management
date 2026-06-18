@@ -133,7 +133,7 @@ export const mockProjects: Project[] = [
     name: "TaskFlow Redesign",
     description: "Complete UI overhaul of the main dashboard",
     status: "active",
-    color: "#7c3aed",
+    color: "violet",
     created_at: daysAgo(30),
   },
   {
@@ -142,7 +142,7 @@ export const mockProjects: Project[] = [
     name: "API Integration",
     description: "Integrate third-party payment and auth APIs",
     status: "active",
-    color: "#0d9488",
+    color: "teal",
     created_at: daysAgo(28),
   },
   {
@@ -151,7 +151,7 @@ export const mockProjects: Project[] = [
     name: "Mobile App",
     description: "React Native mobile companion app",
     status: "on_hold",
-    color: "#ea580c",
+    color: "amber",
     created_at: daysAgo(35),
   },
   {
@@ -160,10 +160,28 @@ export const mockProjects: Project[] = [
     name: "Analytics Dashboard",
     description: "Business intelligence reporting suite",
     status: "active",
-    color: "#d97706",
+    color: "amber",
     created_at: daysAgo(20),
   },
 ];
+
+export const statusProject: Record<
+  string,
+  { label: string; className: string }
+> = {
+  active: {
+    label: "active",
+    className: "bg-emerald-50 text-emerald-700",
+  },
+  on_hold: {
+    label: "on hold",
+    className: "bg-amber-50 text-amber-700",
+  },
+  completed: {
+    label: "completed",
+    className: "bg-blue-50 text-blue-700",
+  },
+};
 
 export const mockTasks: Task[] = [
   {
