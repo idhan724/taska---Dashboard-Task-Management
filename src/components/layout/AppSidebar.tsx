@@ -130,17 +130,17 @@ export default function AppSidebar() {
             {navItems.map(({ path, icon: Icon, label }) => (
               <SidebarMenuItem key={path}>
                 <SidebarMenuButton asChild tooltip={label}>
-                  <NavLink
-                    to={path}
-                    end={path === "/"}
-                    className={({ isActive }) =>
-                      isActive ? "text-primary font-medium" : ""
-                    }
-                  >
+                  <NavLink to={path} end={path === `/${workspaceId}`}>
                     {({ isActive }) => (
                       <>
                         <Icon size={16} className="shrink-0" />
-                        <span className="flex-1">{label}</span>
+                        <span
+                          className={
+                            isActive ? "text-primary font-medium flex-1" : ""
+                          }
+                        >
+                          {label}
+                        </span>
                         {isActive && <ChevronRight size={14} />}
                       </>
                     )}
