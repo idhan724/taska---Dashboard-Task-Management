@@ -33,35 +33,47 @@ export const getAvatarColor = (name: string): string => {
   return colors[Math.abs(hash) % colors.length];
 };
 
+const projectColors: Record<
+  string,
+  { bg: string; bgHover: string; ring: string; ringHover: string }
+> = {
+  violet: {
+    bg: "bg-violet-600",
+    bgHover: "hover:bg-violet-600",
+    ring: "ring-violet-600",
+    ringHover: "hover:ring-violet-600",
+  },
+  teal: {
+    bg: "bg-teal-600",
+    bgHover: "hover:bg-teal-600",
+    ring: "ring-teal-600",
+    ringHover: "hover:ring-teal-600",
+  },
+  orange: {
+    bg: "bg-orange-600",
+    bgHover: "hover:bg-orange-600",
+    ring: "ring-orange-600",
+    ringHover: "hover:ring-orange-600",
+  },
+  amber: {
+    bg: "bg-amber-600",
+    bgHover: "hover:bg-amber-600",
+    ring: "ring-amber-600",
+    ringHover: "hover:ring-amber-600",
+  },
+};
+
+export const projectColorKeys = Object.keys(projectColors);
+
+export const getRandomProjectColor = () => {
+  return projectColorKeys[Math.floor(Math.random() * projectColorKeys.length)];
+};
+
 export const getProjectColor = (color: string) => {
-  const colors: Record<
-    string,
-    { bg: string; bgHover: string; ring: string; ringHover: string }
-  > = {
-    violet: {
-      bg: "bg-violet-600",
-      bgHover: "hover:bg-violet-600",
-      ring: "ring-violet-600",
-      ringHover: "hover:ring-violet-600",
-    },
-    teal: {
-      bg: "bg-teal-600",
-      bgHover: "hover:bg-teal-600",
-      ring: "ring-teal-600",
-      ringHover: "hover:ring-teal-600",
-    },
-    orange: {
-      bg: "bg-orange-600",
-      bgHover: "hover:bg-orange-600",
-      ring: "ring-orange-600",
-      ringHover: "hover:ring-orange-600",
-    },
-    amber: {
-      bg: "bg-amber-600",
-      bgHover: "hover:bg-amber-600",
-      ring: "ring-amber-600",
-      ringHover: "hover:ring-amber-600",
-    },
-  };
-  return colors[color] ?? colors.violet;
+  const colorData = projectColors[color];
+  if (colorData) return colorData;
+
+  const randomKey =
+    projectColorKeys[Math.floor(Math.random() * projectColorKeys.length)];
+  return projectColors[randomKey];
 };
