@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { getMockProjectByWorkspace, mockProjects } from "@/data/staticData";
 import { isLiveMode, supabase } from "@/lib/supabase";
 import type { Project, ProjectFilters, ProjectStatus } from "@/types";
+import { getRandomProjectColor } from "@/lib/utils";
 
 const defaultFiltersProjects: ProjectFilters = {
   search: "",
@@ -14,7 +15,9 @@ interface ProjectStore {
   isLoading: boolean;
   error: string | null;
   fetchProjects: (workspaceId: string) => Promise<void>;
-  addProject: (project: Omit<Project, "id" | "created_at">) => Promise<void>;
+  addProject: (
+    project: Omit<Project, "id" | "created_at" | "color" | "status">,
+  ) => Promise<void>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   setFilter: (filters: Partial<ProjectFilters>) => void;
@@ -54,9 +57,15 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
   addProject: async (project) => {
     set({ error: null });
+
+    const projectData = {
+      ...project,
+      color: getRandomProjectColor(),
+      status: "active" as ProjectStatus,
+    };
     if (!isLiveMode) {
       const newProject: Project = {
-        ...project,
+        ...projectData,
         id: `t${Date.now()}`,
         created_at: new Date().toISOString(),
       };
@@ -65,16 +74,15 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
 
     try {
-      const { ...insertData } = project;
       const { data, error } = await supabase
         .from("projects")
-        .insert(insertData)
+        .insert(projectData)
         .select("*")
         .single();
 
       if (error) throw error;
       set((state) => ({
-        projects: [...state.projects, data as unknown as Project],
+        projects: [data as Project, ...state.projects],
       }));
     } catch (err) {
       const message =
@@ -95,10 +103,9 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
 
     try {
-      const { ...updatesData } = updates;
       const { data, error } = await supabase
         .from("projects")
-        .update(updatesData)
+        .update(updates)
         .eq("id", id)
         .select("*")
         .single();
