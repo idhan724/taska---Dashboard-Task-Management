@@ -1,28 +1,16 @@
+import { motion } from "motion/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTaskStore } from "@/store/taskStore";
 import type { Project } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { statusProject } from "@/data/staticData";
+import { getProjectColor } from "@/lib/utils";
 
 interface ProjectOverviewProps {
   projects: Project[];
   isLoading: boolean;
 }
-
-const statusLabel: Record<string, { label: string; className: string }> = {
-  active: {
-    label: "active",
-    className: "bg-emerald-50 text-emerald-700",
-  },
-  on_hold: {
-    label: "on hold",
-    className: "bg-amber-50 text-amber-700",
-  },
-  completed: {
-    label: "completed",
-    className: "bg-blue-50 text-blue-700",
-  },
-};
 
 export function ProjectOverview({ projects, isLoading }: ProjectOverviewProps) {
   const { tasks } = useTaskStore();
@@ -45,7 +33,7 @@ export function ProjectOverview({ projects, isLoading }: ProjectOverviewProps) {
             there's no projects
           </p>
         ) : (
-          recent.map((project) => {
+          recent.map((project, i) => {
             const taskCount = tasks.filter(
               (t) => t.project_id === project.id,
             ).length;
@@ -57,42 +45,43 @@ export function ProjectOverview({ projects, isLoading }: ProjectOverviewProps) {
                 ? Math.round((completedCount / taskCount) * 100)
                 : 0;
 
-            const status = statusLabel[project.status] ?? {
-              label: project.status,
-              className: "bg-gray-100 text-gray-600",
-            };
-
             return (
-              <Card key={project.id}>
-                <CardContent className="pt-3 pb-3 px-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ background: project.color ?? "#888" }}
-                      />
-                      <span className="text-sm font-medium">
-                        {project.name}
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.08 }}
+              >
+                <Card>
+                  <CardContent className="pt-3 pb-3 px-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${getProjectColor(project.color).bg}`}
+                        />
+                        <span className="text-sm font-medium">
+                          {project.name}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusProject[project.status].className}`}
+                      >
+                        {statusProject[project.status].label}
                       </span>
                     </div>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${status.className}`}
-                    >
-                      {status.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                    <span>
-                      {completedCount ?? 0} / {taskCount ?? 0} tasks
-                    </span>
-                    <span>{percent}%</span>
-                  </div>
-                  <Progress
-                    value={percent}
-                    indicatorStyle={{ background: project.color ?? "#888" }}
-                  />
-                </CardContent>
-              </Card>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                      <span>
+                        {completedCount ?? 0} / {taskCount ?? 0} tasks
+                      </span>
+                      <span>{percent}%</span>
+                    </div>
+                    <Progress
+                      value={percent}
+                      indicatorClassName={`${getProjectColor(project.color).bg}`}
+                    />
+                  </CardContent>
+                </Card>
+              </motion.div>
             );
           })
         )}

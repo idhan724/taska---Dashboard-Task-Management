@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Task } from "@/types";
@@ -43,8 +44,11 @@ export function RecentTasks({ tasks, isLoading }: RecentTasksProps) {
             </p>
           ) : (
             recent.map((task, i) => (
-              <div
+              <motion.div
                 key={task.id}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.08 }}
                 className={`flex items-center justify-between px-4 py-3 ${
                   i < recent.length - 1 ? "border-b border-border" : ""
                 }`}
@@ -74,7 +78,7 @@ export function RecentTasks({ tasks, isLoading }: RecentTasksProps) {
                 >
                   {task.priority}
                 </span>
-              </div>
+              </motion.div>
             ))
           )}
         </CardContent>
