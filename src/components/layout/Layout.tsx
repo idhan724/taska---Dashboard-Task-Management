@@ -5,15 +5,24 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useProjectStore } from "@/store/projectStore";
+import { useTaskStore } from "@/store/taskStore";
 
 export default function Layout() {
   const { workspaceId } = useParams();
-  const { workspaces, setActiveWorkspace } = useWorkspaceStore();
+  const { workspaces, setActiveWorkspace, fetchMembers } = useWorkspaceStore();
+  const { fetchTasks } = useTaskStore();
+  const { fetchProjects } = useProjectStore();
 
   React.useEffect(() => {
     if (!workspaceId) return;
     const workspace = workspaces.find((w) => w.id === workspaceId);
-    if (workspace) setActiveWorkspace(workspace);
+    if (workspace) {
+      setActiveWorkspace(workspace);
+      fetchTasks(workspace.id);
+      fetchProjects(workspace.id);
+      fetchMembers(workspace.id);
+    }
   }, [workspaceId, workspaces]);
 
   return (
