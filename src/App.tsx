@@ -2,8 +2,9 @@ import * as React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { useAuthStore } from "@/store/authStore";
-import Dashboard from "@/pages/Dashboard";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import Dashboard from "@/pages/Dashboard";
+import Projects from "@/pages/Projects";
 
 function App() {
   const { initialize } = useAuthStore();
@@ -25,6 +26,7 @@ function App() {
       />
       <Route path="/:workspaceId" element={<Layout />}>
         <Route index element={<Dashboard />} />
+        <Route path="projects" element={<Projects />} />
       </Route>
     </Routes>
   );
