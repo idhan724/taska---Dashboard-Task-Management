@@ -1,6 +1,5 @@
-import { motion } from "motion/react";
 import * as React from "react";
-import { useParams } from "react-router-dom";
+import { motion } from "motion/react";
 import { useTaskStore } from "@/store/taskStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Plus, Zap } from "lucide-react";
@@ -23,23 +22,18 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 export default function Dashboard() {
-  const { workspaceId } = useParams();
   const { profile } = useAuthStore();
-  const { tasks, fetchTasks } = useTaskStore();
-  const { projects, fetchProjects } = useProjectStore();
-  const { members, fetchMembers, createWorkspaces, isLoading } =
-    useWorkspaceStore();
+  const { tasks, isLoading: isLoadingTasks } = useTaskStore();
+  const { projects, isLoading: isLoadingProjects } = useProjectStore();
+  const {
+    members,
+    createWorkspaces,
+    isLoading: isLoadingWorkspace,
+  } = useWorkspaceStore();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!workspaceId) return;
-    fetchTasks(workspaceId);
-    fetchProjects(workspaceId);
-    fetchMembers(workspaceId);
-  }, [workspaceId]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -152,7 +146,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <StatsCards stats={stats} isLoading={isLoading} />
+      <StatsCards stats={stats} isLoading={isLoadingWorkspace} />
 
       <TaskOverview
         todo={stats.todo}
@@ -160,12 +154,12 @@ export default function Dashboard() {
         done={stats.done}
         overdue={stats.overdue}
         totalTasks={stats.totalTasks}
-        isLoading={isLoading}
+        isLoading={isLoadingTasks}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ProjectOverview projects={projects} isLoading={isLoading} />
-        <RecentTasks tasks={tasks} isLoading={isLoading} />
+        <ProjectOverview projects={projects} isLoading={isLoadingProjects} />
+        <RecentTasks tasks={tasks} isLoading={isLoadingTasks} />
       </div>
     </div>
   );
