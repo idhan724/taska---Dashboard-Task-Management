@@ -47,7 +47,7 @@ export default function AppSidebar() {
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: `/${workspaceId}` },
     { label: "projects", icon: Folder, path: `/${workspaceId}/projects` },
-    { label: "Team", icon: Users, path: `/${workspaceId}/team` },
+    { label: "Teams", icon: Users, path: `/${workspaceId}/teams` },
     { label: "Settings", icon: Settings, path: `/${workspaceId}/settings` },
   ];
 
