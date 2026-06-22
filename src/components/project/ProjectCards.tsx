@@ -1,5 +1,4 @@
 import { motion } from "motion/react";
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { statusProject } from "@/data/staticData";
@@ -7,8 +6,8 @@ import { useTaskStore } from "@/store/taskStore";
 import { Progress } from "@/components/ui/progress";
 import { getProjectColor } from "@/lib/utils";
 import type { Project } from "@/types";
-import EditProjectButton from "./EditProjectButton";
-import DeleteProjectButton from "./DeleteProjectButton";
+import EditProjectButton from "@/components/project/EditProjectButton";
+import DeleteProjectButton from "@/components/project/DeleteProjectButton";
 
 interface ProjectCardsProps {
   projects: Project[];
