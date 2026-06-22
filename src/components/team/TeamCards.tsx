@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar } from "../ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { getAvatarColor, getInitials } from "@/lib/utils";
 
 function TeamCards() {
