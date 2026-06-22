@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
+import Teams from "@/pages/Teams";
 
 function App() {
   const { initialize } = useAuthStore();
@@ -27,6 +28,7 @@ function App() {
       <Route path="/:workspaceId" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="projects" element={<Projects />} />
+        <Route path="teams" element={<Teams />} />
       </Route>
     </Routes>
   );
