@@ -8,17 +8,21 @@ import { getProjectColor } from "@/lib/utils";
 import type { Project } from "@/types";
 import EditProjectButton from "@/components/project/EditProjectButton";
 import DeleteProjectButton from "@/components/project/DeleteProjectButton";
+import { Link, useParams } from "react-router-dom";
 
 interface ProjectCardsProps {
   projects: Project[];
   isLoading?: boolean;
 }
 
+const MotionLink = motion(Link);
+
 export default function ProjectCards({
   projects,
   isLoading,
 }: ProjectCardsProps) {
   const { tasks } = useTaskStore();
+  const { workspaceId } = useParams();
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-7">
@@ -41,15 +45,15 @@ export default function ProjectCards({
           const percent =
             taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0;
           return (
-            <motion.div
+            <MotionLink
               key={project.id}
+              to={`/${workspaceId}/projects/${project.id}`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
+              className={`hover:shadow-md hover:scale-105 ${getProjectColor(project.color).ringHover} transition-all duration-200`}
             >
-              <Card
-                className={`hover:shadow-md hover:scale-105 ${getProjectColor(project.color).ringHover} transition-all duration-200`}
-              >
+              <Card>
                 <CardContent>
                   <div className="flex items-center justify-between py-4">
                     <h3 className="font-semibold">{project.name}</h3>
@@ -75,7 +79,7 @@ export default function ProjectCards({
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </MotionLink>
           );
         })
       )}
