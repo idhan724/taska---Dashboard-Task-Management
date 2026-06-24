@@ -35,6 +35,7 @@ export default function DeleteProjectButton({
       <AlertDialogTrigger asChild>
         <Button
           size="sm"
+          onClick={(e) => e.stopPropagation()}
           className="bg-background text-foreground hover:text-red-500 hover:bg-red-50"
         >
           <Trash />
