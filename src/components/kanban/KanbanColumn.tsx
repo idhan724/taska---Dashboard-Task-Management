@@ -1,24 +1,25 @@
 import type { Task } from "@/types";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Separator } from "../ui/separator";
+import { Separator } from "@/components/ui/separator";
+import TaskCards from "@/components/kanban/TaskCards";
 
 interface KanbanColumnProps {
   tasks: Task[];
 }
 
-export default function KanbanColumn({ tasks }: KanbanColumnProps) {
-  const columns = [
-    { id: "todo", title: "To Do", color: "bg-blue-500", order: 0 },
-    {
-      id: "in-progress",
-      title: "In Progress",
-      color: "bg-yellow-500",
-      order: 1,
-    },
-    { id: "done", title: "Done", color: "bg-green-500", order: 2 },
-  ];
+const columns = [
+  { id: "todo", title: "To Do", color: "bg-blue-500", order: 0 },
+  {
+    id: "in-progress",
+    title: "In Progress",
+    color: "bg-yellow-500",
+    order: 1,
+  },
+  { id: "done", title: "Done", color: "bg-green-500", order: 2 },
+];
 
+export default function KanbanColumn({ tasks }: KanbanColumnProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl ring-1 ring-foreground/10 shadow-md ">
       {columns.map((column) => {
@@ -59,14 +60,7 @@ export default function KanbanColumn({ tasks }: KanbanColumnProps) {
                 </div>
               ) : (
                 taskByStatus.map((task) => (
-                  <div
-                    key={task.id}
-                    className="bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg p-3 shadow-sm"
-                  >
-                    <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                      {task.title}
-                    </p>
-                  </div>
+                  <TaskCards key={task.id} tasks={task} />
                 ))
               )}
             </div>
