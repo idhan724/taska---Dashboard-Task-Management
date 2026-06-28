@@ -12,6 +12,7 @@ import {
 import { Edit } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface EditProjectButtonProps {
   project: Project;
@@ -37,8 +38,10 @@ export default function EditProjectButton({ project }: EditProjectButtonProps) {
       setName("");
       setDescription("");
       setIsDialogOpen(false);
-    } catch (err) {
-      console.log(err);
+    } catch {
+      toast.error(
+        useProjectStore.getState().error ?? "Failed to update project",
+      );
     } finally {
       setIsUpdating(false);
     }

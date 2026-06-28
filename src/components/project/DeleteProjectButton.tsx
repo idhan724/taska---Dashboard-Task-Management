@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useProjectStore } from "@/store/projectStore";
 import type { Project } from "@/types";
 import { Trash } from "lucide-react";
+import { toast } from "sonner";
 
 interface DeleteProjectButtonProps {
   project: Project;
@@ -26,8 +27,10 @@ export default function DeleteProjectButton({
   const handleDelete = async () => {
     try {
       await deleteProject(project.id);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      toast.error(
+        useProjectStore.getState().error ?? "Failed to delete project",
+      );
     }
   };
   return (

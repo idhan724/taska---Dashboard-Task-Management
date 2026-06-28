@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
 import Teams from "@/pages/Teams";
 import KanbanBoard from "@/pages/KanbanBoard";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   const { initialize } = useAuthStore();
@@ -21,18 +22,21 @@ function App() {
   }, [initialize]);
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<Navigate to={`/${workspaces[0]?.id}`} replace />}
-      />
-      <Route path="/:workspaceId" element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="projects" element={<Projects />} />
-        <Route path="projects/:projectId" element={<KanbanBoard />} />
-        <Route path="teams" element={<Teams />} />
-      </Route>
-    </Routes>
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={`/${workspaces[0]?.id}`} replace />}
+        />
+        <Route path="/:workspaceId" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="projects/:projectId" element={<KanbanBoard />} />
+          <Route path="teams" element={<Teams />} />
+        </Route>
+      </Routes>
+      <Toaster />
+    </>
   );
 }
 

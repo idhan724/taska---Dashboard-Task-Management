@@ -12,6 +12,7 @@ import {
 import { Plus } from "lucide-react";
 import { useProjectStore } from "@/store/projectStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import { toast } from "sonner";
 
 export default function AddProjectButton() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -35,8 +36,8 @@ export default function AddProjectButton() {
       setName("");
       setDescription("");
       setIsDialogOpen(false);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      toast.error(useProjectStore.getState().error ?? "Failed to add project");
     } finally {
       setIsCreating(false);
     }
