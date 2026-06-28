@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import TaskCards from "@/components/kanban/TaskCards";
+import { useDroppable } from "@dnd-kit/react";
+import { cn } from "@/lib/utils";
 
 interface KanbanColumnProps {
   tasks: Task[];
@@ -24,10 +26,16 @@ export default function KanbanColumn({ tasks }: KanbanColumnProps) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl ring-1 ring-foreground/10 shadow-md ">
       {columns.map((column) => {
         const taskByStatus = tasks.filter((task) => task.status === column.id);
+        const { ref, isDropTarget } = useDroppable({ id: column.id });
         return (
           <div
             key={column.id}
-            className="flex flex-col rounded-2xl p-4 min-h-55 transition-all duration-200"
+            ref={ref}
+            className={cn(
+              "flex flex-col rounded-2xl p-4 min-h-55 transition-all duration-200",
+              isDropTarget &&
+                "bg-neutral-100 ring-2 ring-dashed ring-neutral-300",
+            )}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">

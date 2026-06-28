@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { Task } from "@/types";
 import { CalendarIcon, Clock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useDraggable } from "@dnd-kit/react";
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
@@ -26,8 +27,16 @@ interface KanbanColumnProps {
 }
 
 function TaskCards({ tasks }: KanbanColumnProps) {
+  const { ref, isDragging } = useDraggable({ id: tasks.id });
   return (
-    <Card className="relative">
+    <Card
+      ref={ref}
+      className="relative transition-opacity"
+      style={{
+        opacity: isDragging ? 0.4 : 1,
+        cursor: isDragging ? "grabbing" : "grab",
+      }}
+    >
       <div
         className={`absolute left-0 top-3 bottom-3 w-0.75 rounded-r-full ${priorityColor[tasks.priority]}`}
       />
