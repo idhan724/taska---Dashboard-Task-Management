@@ -4,8 +4,7 @@ import { useTaskStore } from "@/store/taskStore";
 import type { Project } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { statusProject } from "@/data/staticData";
-import { getProjectColor } from "@/lib/utils";
+import { getProjectColor, statusProject } from "@/lib/utils";
 
 interface ProjectOverviewProps {
   projects: Project[];

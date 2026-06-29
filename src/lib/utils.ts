@@ -77,3 +77,21 @@ export const getProjectColor = (color: string) => {
     projectColorKeys[Math.floor(Math.random() * projectColorKeys.length)];
   return projectColors[randomKey];
 };
+
+export const statusProject: Record<
+  string,
+  { label: string; className: string }
+> = {
+  active: {
+    label: "active",
+    className: "bg-emerald-50 text-emerald-700",
+  },
+  on_hold: {
+    label: "on hold",
+    className: "bg-amber-50 text-amber-700",
+  },
+  completed: {
+    label: "completed",
+    className: "bg-blue-50 text-blue-700",
+  },
+};
