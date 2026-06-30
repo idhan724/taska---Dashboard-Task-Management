@@ -61,8 +61,10 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       if (error) throw error;
       set({ tasks: (data as unknown as Task[]) || [] });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Gagal memuat tasks";
+      const message =
+        err instanceof Error ? err.message : "Failed to Load tasks";
       set({ error: message });
+      throw err;
     } finally {
       set({ isLoading: false });
     }
@@ -91,15 +93,16 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       if (error) throw error;
       set({ tasks: (data as unknown as Task[]) || [] });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Gagal memuat tasks";
+      const message =
+        err instanceof Error ? err.message : "Failed to load tasks";
       set({ error: message });
+      throw err;
     } finally {
       set({ isLoading: false });
     }
   },
 
   addTask: async (taskData) => {
-    set({ error: null });
     if (!isLiveMode) {
       const newTask: Task = {
         ...taskData,
@@ -111,6 +114,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const { projects, ...insertData } = taskData;
 
@@ -127,11 +131,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         err instanceof Error ? err.message : "Gagal menambahkan task";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
   updateTask: async (id, updates) => {
-    set({ error: null });
     if (!isLiveMode) {
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
@@ -139,6 +144,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const { projects, ...updatesData } = updates;
       const { data, error } = await supabase
@@ -159,6 +165,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         err instanceof Error ? err.message : "Gagal mengupdate task";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
@@ -169,7 +177,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }));
       return;
     }
-    set({ error: null });
+
+    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase.from("tasks").delete().eq("id", id);
       if (error) throw error;
@@ -179,6 +188,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         err instanceof Error ? err.message : "Gagal menghapus task";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
@@ -191,6 +202,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
     if (!isLiveMode) return;
 
+    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase
         .from("tasks")
@@ -206,6 +218,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         err instanceof Error ? err.message : "Gagal memindahkan task";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
