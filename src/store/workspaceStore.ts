@@ -102,6 +102,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const {
         data: { user },
@@ -136,6 +137,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to create workspace";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
@@ -153,6 +156,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const { data: updated, error } = await supabase
         .from("workspaces")
@@ -173,6 +177,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to update workspace";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
@@ -217,6 +223,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase.from("workspaces").delete().eq("id", id);
       if (error) throw error;
@@ -247,6 +254,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to delete workspace";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
@@ -261,6 +270,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       });
       return;
     }
+
+    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("workspace_members")
@@ -274,10 +285,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to fetch members";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
   inviteMember: async (workspaceId, email) => {
+    if (!isLiveMode) return;
+    set({ isLoading: true, error: null });
     try {
       const {
         data: { user },
@@ -296,17 +311,15 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to invite member";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
   removeMember: async (workspaceId, userId) => {
-    if (!isLiveMode) {
-      set((state) => ({
-        members: state.members.filter((m) => m.user_id !== userId),
-      }));
-      return;
-    }
+    if (!isLiveMode) return;
 
+    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase
         .from("workspace_members")
@@ -324,10 +337,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to remove member";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 
   leaveWorkspace: async (workspaceId) => {
+    if (!isLiveMode) return;
+    set({ isLoading: true, error: null });
     try {
       const {
         data: { user },
@@ -350,6 +367,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to leave workspace";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));
