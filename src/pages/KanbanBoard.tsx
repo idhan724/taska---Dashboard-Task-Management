@@ -8,7 +8,7 @@ import type { Task } from "@/types";
 import { toast } from "sonner";
 
 export default function KanbanBoard() {
-  const { tasks, updateTask } = useTaskStore();
+  const { tasks, moveTask } = useTaskStore();
   const { projectId } = useParams();
 
   const projectTasks = tasks.filter((t) => t.project_id === projectId);
@@ -29,9 +29,7 @@ export default function KanbanBoard() {
         if (!taskId || !newStatus) return;
 
         try {
-          await updateTask(String(taskId), {
-            status: newStatus as Task["status"],
-          });
+          await moveTask(String(taskId), newStatus as Task["status"]);
         } catch {
           toast.error(useTaskStore.getState().error ?? "Failed to update task");
         }
