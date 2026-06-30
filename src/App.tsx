@@ -8,6 +8,7 @@ import Projects from "@/pages/Projects";
 import Teams from "@/pages/Teams";
 import KanbanBoard from "@/pages/KanbanBoard";
 import { Toaster } from "@/components/ui/sonner";
+import Settings from "@/pages/Settings";
 
 function App() {
   const { initialize } = useAuthStore();
@@ -33,6 +34,7 @@ function App() {
           <Route path="projects" element={<Projects />} />
           <Route path="projects/:projectId" element={<KanbanBoard />} />
           <Route path="teams" element={<Teams />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
       <Toaster />
