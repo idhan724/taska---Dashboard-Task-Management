@@ -56,8 +56,6 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
   },
   addProject: async (project) => {
-    set({ error: null });
-
     const projectData = {
       ...project,
       color: getRandomProjectColor(),
@@ -69,10 +67,13 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         id: `t${Date.now()}`,
         created_at: new Date().toISOString(),
       };
-      set((state) => ({ projects: [newProject, ...state.projects] }));
+      set((state) => ({
+        projects: [newProject, ...state.projects],
+      }));
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("projects")
@@ -89,10 +90,11 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to add project";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
   updateProject: async (id, updates) => {
-    set({ error: null });
     if (!isLiveMode) {
       set((state) => ({
         projects: state.projects.map((t) =>
@@ -102,6 +104,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("projects")
@@ -121,10 +124,11 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to update project";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
   deleteProject: async (id) => {
-    set({ error: null });
     if (!isLiveMode) {
       set((state) => ({
         projects: state.projects.filter((t) => t.id !== id),
@@ -132,6 +136,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       return;
     }
 
+    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) throw error;
@@ -141,6 +146,8 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed to delete project";
       set({ error: message });
       throw err;
+    } finally {
+      set({ isLoading: false });
     }
   },
   setFilter: (filters) =>
