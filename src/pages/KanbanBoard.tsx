@@ -38,9 +38,7 @@ export default function KanbanBoard() {
         const newStatus = target.id as Task["status"];
         if (currentTask.status !== newStatus) {
           moveTask(currentTask.id, newStatus).catch(() => {
-            toast.error(
-              useTaskStore.getState().error ?? "Failed to update task",
-            );
+            toast.error(useTaskStore.getState().error ?? "Failed to move task");
           });
         }
       }}
