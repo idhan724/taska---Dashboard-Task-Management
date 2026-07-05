@@ -357,8 +357,5 @@ export const getMockProjectByWorkspace = (
   project: Project[],
 ) => project.filter((t) => t.workspace_id === workspaceId);
 
-export const getMockTasksByWorkspace = (workspaceId: string, tasks: Task[]) =>
+export const getMockTasks = (workspaceId: string, tasks: Task[]) =>
   tasks.filter((t) => t.workspace_id === workspaceId);
-
-export const getMockTasksByProjects = (projectId: string, tasks: Task[]) =>
-  tasks.filter((t) => t.project_id === projectId);
