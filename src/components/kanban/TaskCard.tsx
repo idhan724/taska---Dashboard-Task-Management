@@ -1,13 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { Task } from "@/types";
-import { CalendarIcon, Clock, Trash2 } from "lucide-react";
+import { CalendarIcon, Clock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useDraggable } from "@dnd-kit/react";
 import { cn } from "@/lib/utils";
 import EditTaskButton from "@/components/kanban/EditTaskButton";
-import { Button } from "@/components/ui/button";
-import { useTaskStore } from "@/store/taskStore";
-import { toast } from "sonner";
+import DeleteTaskButton from "./DeleteTaskButton";
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
@@ -37,7 +35,7 @@ export default function TaskCard({ task, isOverlay }: TaskCardProps) {
     id: task.id,
     disabled: isOverlay,
   });
-  const { deleteTask } = useTaskStore();
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const startOfWeek = new Date(today);
@@ -101,20 +99,7 @@ export default function TaskCard({ task, isOverlay }: TaskCardProps) {
         {!isOverlay && (
           <div className="flex items-center absolute top-2 right-0 p-1 opacity-0 group-hover/card:opacity-100 transition-opacity text-neutral-400">
             <EditTaskButton task={task} />
-            <Button
-              size="sm"
-              className="bg-background text-neutral-400 hover:text-red-500 hover:bg-red-50"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => {
-                deleteTask(task.id).catch(() => {
-                  toast.error(
-                    useTaskStore.getState().error ?? "Failed to delete task",
-                  );
-                });
-              }}
-            >
-              <Trash2 size={11} />
-            </Button>
+            <DeleteTaskButton task={task} />
           </div>
         )}
       </CardContent>
