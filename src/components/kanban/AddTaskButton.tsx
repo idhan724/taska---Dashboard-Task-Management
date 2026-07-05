@@ -25,30 +25,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDisplayDate, toISODateString } from "@/lib/utils";
 import { toast } from "sonner";
 import { useTaskStore } from "@/store/taskStore";
 import { useParams } from "react-router-dom";
 import type { Priority, Status } from "@/types";
+import { Spinner } from "@/components/ui/spinner";
 
 interface AddTaskButtonProps {
   status: Status;
   trigger: React.ReactNode;
-}
-
-function toISODateString(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatDisplayDate(date: Date) {
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 export default function AddTaskButton({ status, trigger }: AddTaskButtonProps) {
@@ -113,9 +99,9 @@ export default function AddTaskButton({ status, trigger }: AddTaskButtonProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="desc">Description</Label>
             <Textarea
-              id="description"
+              id="desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Description (optional)"
@@ -170,7 +156,13 @@ export default function AddTaskButton({ status, trigger }: AddTaskButtonProps) {
 
           <DialogFooter>
             <Button type="submit" disabled={isCreating || !name.trim()}>
-              {isCreating ? "Adding..." : "Add task"}
+              {isCreating ? (
+                <>
+                  <Spinner /> Adding...
+                </>
+              ) : (
+                "Add task"
+              )}
             </Button>
           </DialogFooter>
         </form>
