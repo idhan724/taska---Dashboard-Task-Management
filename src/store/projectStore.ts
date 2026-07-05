@@ -12,7 +12,8 @@ const defaultFiltersProjects: ProjectFilters = {
 interface ProjectStore {
   projects: Project[];
   filters: ProjectFilters;
-  isLoading: boolean;
+  isFetching: boolean;
+  isSubmitting: boolean;
   error: string | null;
   fetchProjects: (workspaceId: string) => Promise<void>;
   addProject: (
@@ -29,16 +30,18 @@ interface ProjectStore {
 export const useProjectStore = create<ProjectStore>((set, get) => ({
   projects: [],
   filters: defaultFiltersProjects,
-  isLoading: false,
+  isFetching: false,
+  isSubmitting: false,
   error: null,
   fetchProjects: async (workspaceId) => {
+    set({ isFetching: true, error: null });
     if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       const filtered = getMockProjectByWorkspace(workspaceId, mockProjects);
-      set({ projects: filtered });
+      set({ projects: filtered, isFetching: false });
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("projects")
@@ -52,16 +55,18 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         err instanceof Error ? err.message : "Failed load project";
       set({ error: message });
     } finally {
-      set({ isLoading: false });
+      set({ isFetching: false });
     }
   },
   addProject: async (project) => {
+    set({ isSubmitting: true, error: null });
     const projectData = {
       ...project,
       color: getRandomProjectColor(),
       status: "active" as ProjectStatus,
     };
     if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       const newProject: Project = {
         ...projectData,
         id: `t${Date.now()}`,
@@ -69,11 +74,11 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       };
       set((state) => ({
         projects: [newProject, ...state.projects],
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("projects")
@@ -91,20 +96,22 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
   updateProject: async (id, updates) => {
+    set({ isSubmitting: true, error: null });
     if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       set((state) => ({
         projects: state.projects.map((t) =>
           t.id === id ? { ...t, ...updates } : t,
         ),
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("projects")
@@ -125,18 +132,20 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
   deleteProject: async (id) => {
+    set({ isSubmitting: true, error: null });
     if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       set((state) => ({
         projects: state.projects.filter((t) => t.id !== id),
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) throw error;
@@ -147,7 +156,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
   setFilter: (filters) =>
