@@ -23,13 +23,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
   error: null,
 
   initialize: async () => {
+    set({ isLoading: true, error: null });
     if (!isLiveMode) {
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 2000));
       set({ user: { id: mockCurrentUser.id } as User, isLoading: false });
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const {
         data: { session },
