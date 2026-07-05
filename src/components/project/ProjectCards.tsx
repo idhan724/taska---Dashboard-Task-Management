@@ -26,9 +26,7 @@ export default function ProjectCards({
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-7">
       {isLoading ? (
-        [...Array(projects.length)].map((_, i) => (
-          <Skeleton key={i} className="h-28" />
-        ))
+        [...Array(4)].map((_, i) => <Skeleton key={i} className="h-38" />)
       ) : projects.length === 0 ? (
         <p className="text-center text-muted-foreground text-sm py-8">
           there's no projects
