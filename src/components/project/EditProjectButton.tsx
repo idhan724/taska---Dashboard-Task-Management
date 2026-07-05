@@ -13,6 +13,8 @@ import { Edit } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 
 interface EditProjectButtonProps {
   project: Project;
@@ -74,15 +76,22 @@ export default function EditProjectButton({ project }: EditProjectButtonProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="desc">Description</Label>
-            <Input
+            <Textarea
               id="desc"
-              placeholder="Brief description of the project"
+              placeholder="Description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
           <Button type="submit" className="w-full" disabled={isUpdating}>
-            {isUpdating ? "Updating..." : "Update Project"}
+            {isUpdating ? (
+              <>
+                <Spinner />
+                Updating...
+              </>
+            ) : (
+              "Update Project"
+            )}
           </Button>
         </form>
       </DialogContent>

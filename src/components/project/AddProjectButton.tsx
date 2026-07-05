@@ -13,6 +13,8 @@ import { Plus } from "lucide-react";
 import { useProjectStore } from "@/store/projectStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function AddProjectButton() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -67,9 +69,9 @@ export default function AddProjectButton() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="desc">Description (optional)</Label>
-            <Input
+            <Textarea
               id="desc"
-              placeholder="Brief description of the project"
+              placeholder="Description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -79,7 +81,14 @@ export default function AddProjectButton() {
             className="w-full"
             disabled={!activeWorkspace || isCreating}
           >
-            {isCreating ? "Creating..." : "Create Project"}
+            {isCreating ? (
+              <>
+                <Spinner />
+                Creating...
+              </>
+            ) : (
+              "Create Project"
+            )}
           </Button>
         </form>
       </DialogContent>
