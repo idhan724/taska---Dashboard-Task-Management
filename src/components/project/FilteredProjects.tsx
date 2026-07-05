@@ -5,7 +5,7 @@ import ProjectCards from "@/components/project/ProjectCards";
 
 export default function FilteredProjects() {
   type TabsFilteredProps = ProjectStatus | "all";
-  const { isLoading, setFilter, getFilteredProjects } = useProjectStore();
+  const { isFetching, setFilter, getFilteredProjects } = useProjectStore();
 
   const filteredProjects = getFilteredProjects();
   return (
@@ -20,7 +20,7 @@ export default function FilteredProjects() {
         <TabsTrigger value="on_hold">On Hold</TabsTrigger>
         <TabsTrigger value="completed">Completed</TabsTrigger>
       </TabsList>
-      <ProjectCards projects={filteredProjects} isLoading={isLoading} />
+      <ProjectCards projects={filteredProjects} isLoading={isFetching} />
     </Tabs>
   );
 }
