@@ -1,11 +1,7 @@
 import { create } from "zustand";
 import { isLiveMode, supabase } from "@/lib/supabase";
 import type { Task, Status, TaskFilters } from "@/types";
-import {
-  getMockTasksByProjects,
-  getMockTasksByWorkspace,
-  mockTasks,
-} from "@/data/staticData";
+import { getMockTasks, mockTasks } from "@/data/staticData";
 
 const defaultFiltersTasks: TaskFilters = {
   search: "",
@@ -16,12 +12,12 @@ const defaultFiltersTasks: TaskFilters = {
 interface TaskStore {
   tasks: Task[];
   filters: TaskFilters;
-  isLoading: boolean;
+  isFetching: boolean;
+  isSubmitting: boolean;
   error: string | null;
   fetchTasks: (workspaceId: string) => Promise<void>;
-  fetchTasksByProject: (projectId: string) => Promise<void>;
   addTask: (
-    task: Omit<Task, "id" | "created_at" | "updated_at">,
+    task: Omit<Task, "id" | "created_at" | "updated_at" | "position">,
   ) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
@@ -29,23 +25,25 @@ interface TaskStore {
   setFilter: (filters: Partial<TaskFilters>) => void;
   resetFilters: () => void;
   getFilteredTasks: () => Task[];
-  getTasksByStatus: (status: Status) => Task[];
+  getTasksByStatus: (id: string, status: Status) => Task[];
 }
 
 export const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   filters: defaultFiltersTasks,
-  isLoading: false,
+  isFetching: false,
+  isSubmitting: false,
   error: null,
 
   fetchTasks: async (workspaceId) => {
+    set({ isFetching: true, error: null });
     if (!isLiveMode) {
-      const filtered = getMockTasksByWorkspace(workspaceId, mockTasks);
-      set({ tasks: filtered });
+      await new Promise((r) => setTimeout(r, 2000));
+      const filtered = getMockTasks(workspaceId, mockTasks);
+      set({ tasks: filtered, isFetching: false });
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("tasks")
@@ -66,55 +64,43 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isFetching: false });
     }
   },
 
-  fetchTasksByProject: async (projectId) => {
+  addTask: async (task) => {
+    set({ isSubmitting: true, error: null });
+
+    const tasksInSameStatus = get().tasks.filter(
+      (t) => t.status === task.status,
+    );
+    const maxPosition =
+      tasksInSameStatus.length > 0
+        ? Math.max(...tasksInSameStatus.map((t) => t.position ?? 0))
+        : 0;
+
+    const newPosition = maxPosition + 1;
+
+    const taskData: Omit<Task, "id" | "created_at" | "updated_at"> = {
+      ...task,
+      position: newPosition,
+    };
+
     if (!isLiveMode) {
-      const filtered = getMockTasksByProjects(projectId, mockTasks);
-      set({ tasks: filtered });
-      return;
-    }
-
-    set({ isLoading: true, error: null });
-    try {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select(
-          `
-          *,
-          projects(*)
-        `,
-        )
-        .eq("project_id", projectId)
-        .order("position", { ascending: true });
-
-      if (error) throw error;
-      set({ tasks: (data as unknown as Task[]) || [] });
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to load tasks";
-      set({ error: message });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  addTask: async (taskData) => {
-    if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       const newTask: Task = {
         ...taskData,
         id: `t${Date.now()}`,
         created_at: new Date().toISOString(),
         updated_at: null,
       };
-      set((state) => ({ tasks: [newTask, ...state.tasks] }));
+      set((state) => ({
+        tasks: [newTask, ...state.tasks],
+        isSubmitting: false,
+      }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { projects, ...insertData } = taskData;
 
@@ -127,24 +113,25 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       if (error) throw error;
       set((state) => ({ tasks: [...state.tasks, data as unknown as Task] }));
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Gagal menambahkan task";
+      const message = err instanceof Error ? err.message : "Failed to add task";
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
   updateTask: async (id, updates) => {
+    set({ isSubmitting: true, error: null });
     if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { projects, ...updatesData } = updates;
       const { data, error } = await supabase
@@ -162,34 +149,36 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       }));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Gagal mengupdate task";
+        err instanceof Error ? err.message : "Failed to Update task";
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
   deleteTask: async (id) => {
+    set({ isSubmitting: true, error: null });
     if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       set((state) => ({
         tasks: state.tasks.filter((t) => t.id !== id),
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase.from("tasks").delete().eq("id", id);
       if (error) throw error;
       set((state) => ({ tasks: state.tasks.filter((t) => t.id !== id) }));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Gagal menghapus task";
+        err instanceof Error ? err.message : "Failed to delete task";
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
@@ -202,7 +191,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
     if (!isLiveMode) return;
 
-    set({ isLoading: true, error: null });
+    set({ isSubmitting: true, error: null });
     try {
       const { error } = await supabase
         .from("tasks")
@@ -215,11 +204,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       if (projectId) await get().fetchTasks(projectId);
 
       const message =
-        err instanceof Error ? err.message : "Gagal memindahkan task";
+        err instanceof Error ? err.message : "Failed to move task";
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
@@ -268,9 +257,10 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     });
   },
 
-  getTasksByStatus: (status) => {
+  getTasksByStatus: (id, status) => {
     return get()
       .getFilteredTasks()
-      .filter((t) => t.status === status);
+      .filter((t) => t.status === status && t.project_id === id)
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   },
 }));
