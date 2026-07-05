@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +15,7 @@ import { useProjectStore } from "@/store/projectStore";
 import type { Project } from "@/types";
 import { Trash } from "lucide-react";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DeleteProjectButtonProps {
   project: Project;
@@ -23,14 +25,18 @@ export default function DeleteProjectButton({
   project,
 }: DeleteProjectButtonProps) {
   const { deleteProject } = useProjectStore();
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
       await deleteProject(project.id);
     } catch {
       toast.error(
         useProjectStore.getState().error ?? "Failed to delete project",
       );
+    } finally {
+      setIsDeleting(false);
     }
   };
   return (
@@ -58,9 +64,17 @@ export default function DeleteProjectButton({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
+            disabled={isDeleting}
             className="bg-red-600 text-white hover:bg-red-700"
           >
-            Delete
+            {isDeleting ? (
+              <>
+                <Spinner />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
