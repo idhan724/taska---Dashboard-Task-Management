@@ -3,16 +3,17 @@ import KanbanColumn from "@/components/kanban/KanbanColumn";
 import { Progress } from "@/components/ui/progress";
 import { getProjectColor } from "@/lib/utils";
 import { useTaskStore } from "@/store/taskStore";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import type { Task } from "@/types";
 import { toast } from "sonner";
 import TaskCards from "@/components/kanban/TaskCard";
+import { ArrowLeft } from "lucide-react";
 import ToggleStatusButton from "@/components/project/ToggleStatusButton";
 
 export default function KanbanBoard() {
   const { tasks, moveTask } = useTaskStore();
-  const { projectId } = useParams();
+  const { projectId, workspaceId } = useParams();
   const [activeCard, setActiveCard] = React.useState<Task | null>(null);
 
   const projectTasks = tasks.filter((t) => t.project_id === projectId);
@@ -49,6 +50,12 @@ export default function KanbanBoard() {
       }}
     >
       <div className="flex items-center justify-between p-4 mb-5">
+        <Link
+          to={`/${workspaceId}/projects`}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft /> Back to Projects
+        </Link>
         <ToggleStatusButton />
       </div>
 
