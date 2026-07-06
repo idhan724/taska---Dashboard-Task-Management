@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getMockProjectByWorkspace, mockProjects } from "@/data/staticData";
 import { isLiveMode, supabase } from "@/lib/supabase";
-import type { Project, ProjectFilters, ProjectStatus } from "@/types";
+import type { Project, ProjectFilters, ProjectStatus, Task } from "@/types";
 import { getRandomProjectColor } from "@/lib/utils";
 
 const defaultFiltersProjects: ProjectFilters = {
@@ -20,6 +20,7 @@ interface ProjectStore {
     project: Omit<Project, "id" | "created_at" | "color" | "status">,
   ) => Promise<void>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
+  updateProjectStatus: (id: string, tasks: Task[]) => void;
   deleteProject: (id: string) => Promise<void>;
   setFilter: (filters: Partial<ProjectFilters>) => void;
   resetFilters: () => void;
@@ -133,6 +134,20 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       throw err;
     } finally {
       set({ isSubmitting: false });
+    }
+  },
+  updateProjectStatus: (id, tasks) => {
+    const projectTasks = tasks.filter((t) => t.project_id === id);
+    if (projectTasks.length === 0) return;
+
+    const allDone = projectTasks.every((t) => t.status === "done");
+    const project = get().projects.find((p) => p.id === id);
+    if (!project) return;
+
+    let newStatus: ProjectStatus = allDone ? "completed" : "active";
+
+    if (project.status !== newStatus) {
+      get().updateProject(project.id, { status: newStatus });
     }
   },
   deleteProject: async (id) => {

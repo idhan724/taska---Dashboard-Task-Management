@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { isLiveMode, supabase } from "@/lib/supabase";
 import type { Task, Status, TaskFilters } from "@/types";
 import { getMockTasks, mockTasks } from "@/data/staticData";
+import { useProjectStore } from "@/store/projectStore";
 
 const defaultFiltersTasks: TaskFilters = {
   search: "",
@@ -188,6 +189,13 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         t.id === taskId ? { ...t, status: newStatus } : t,
       ),
     }));
+
+    const task = get().tasks.find((t) => t.id === taskId);
+    if (task) {
+      useProjectStore
+        .getState()
+        .updateProjectStatus(task.project_id, get().tasks);
+    }
 
     if (!isLiveMode) return;
 
