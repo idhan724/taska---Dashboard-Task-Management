@@ -1,7 +1,8 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProjectStatus } from "@/types";
 import { useProjectStore } from "@/store/projectStore";
-import ProjectCards from "@/components/project/ProjectCards";
+import { Skeleton } from "@/components/ui/skeleton";
+import ProjectCard from "@/components/project/ProjectCards";
 
 export default function FilteredProjects() {
   type TabsFilteredProps = ProjectStatus | "all";
@@ -20,7 +21,25 @@ export default function FilteredProjects() {
         <TabsTrigger value="on_hold">On Hold</TabsTrigger>
         <TabsTrigger value="completed">Completed</TabsTrigger>
       </TabsList>
-      <ProjectCards projects={filteredProjects} isLoading={isFetching} />
+      {isFetching ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-7">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-38" />
+          ))}
+        </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex items-center justify-center h-100">
+          <p className="text-lg text-muted-foreground">
+            There are no projects yet
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-7">
+          {filteredProjects.map((project, i) => (
+            <ProjectCard key={project.id} project={project} i={i} />
+          ))}
+        </div>
+      )}
     </Tabs>
   );
 }
