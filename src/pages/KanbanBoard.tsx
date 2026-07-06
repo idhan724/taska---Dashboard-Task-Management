@@ -8,6 +8,7 @@ import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import type { Task } from "@/types";
 import { toast } from "sonner";
 import TaskCards from "@/components/kanban/TaskCard";
+import ToggleStatusButton from "@/components/project/ToggleStatusButton";
 
 export default function KanbanBoard() {
   const { tasks, moveTask } = useTaskStore();
@@ -47,6 +48,10 @@ export default function KanbanBoard() {
         if (e.canceled) return;
       }}
     >
+      <div className="flex items-center justify-between p-4 mb-5">
+        <ToggleStatusButton />
+      </div>
+
       <div className="flex items-center justify-between p-4 mb-5">
         <h1 className="text-2xl font-bold">Kanban Board</h1>
         <div className="w-50 ring-1 ring-foreground/10 rounded-xl p-4 shadow-md">
