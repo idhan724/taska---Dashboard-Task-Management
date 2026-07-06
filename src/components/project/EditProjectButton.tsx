@@ -53,7 +53,6 @@ export default function EditProjectButton({ project }: EditProjectButtonProps) {
       <DialogTrigger asChild>
         <Button
           size="sm"
-          onClick={(e) => e.stopPropagation()}
           className="bg-background text-foreground hover:text-blue-500 hover:bg-blue-50"
         >
           <Edit />
