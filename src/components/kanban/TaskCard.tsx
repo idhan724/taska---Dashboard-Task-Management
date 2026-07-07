@@ -6,6 +6,7 @@ import { useDraggable } from "@dnd-kit/react";
 import { cn } from "@/lib/utils";
 import EditTaskButton from "@/components/kanban/EditTaskButton";
 import DeleteTaskButton from "./DeleteTaskButton";
+import { useProjectStore } from "@/store/projectStore";
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
@@ -31,9 +32,12 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, isOverlay }: TaskCardProps) {
+  const projects = useProjectStore((s) => s.projects);
+  const project = projects.find((p) => p.id === task.project_id);
+  const isOnHold = project?.status === "on_hold";
   const { ref, isDragging } = useDraggable({
     id: task.id,
-    disabled: isOverlay,
+    disabled: isOverlay || isOnHold,
   });
 
   const today = new Date();
@@ -48,7 +52,12 @@ export default function TaskCard({ task, isOverlay }: TaskCardProps) {
       ref={ref}
       className={cn(
         "relative transition-opacity",
-        isDragging ? "opacity-40 cursor-grabbing" : "cursor-grab opacity-100",
+        isOnHold
+          ? "cursor-not-allowed"
+          : isDragging
+            ? "opacity-40 cursor-grabbing"
+            : "cursor-grab opacity-100",
+        isOnHold && "bg-foreground/10",
       )}
     >
       <div
@@ -98,8 +107,8 @@ export default function TaskCard({ task, isOverlay }: TaskCardProps) {
         </div>
         {!isOverlay && (
           <div className="flex items-center absolute top-2 right-0 p-1 opacity-0 group-hover/card:opacity-100 transition-opacity text-neutral-400">
-            <EditTaskButton task={task} />
-            <DeleteTaskButton task={task} />
+            <EditTaskButton task={task} isOnHold={isOnHold} />
+            <DeleteTaskButton task={task} isOnHold={isOnHold} />
           </div>
         )}
       </CardContent>

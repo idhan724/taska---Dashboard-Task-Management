@@ -10,11 +10,15 @@ import { toast } from "sonner";
 import TaskCards from "@/components/kanban/TaskCard";
 import { ArrowLeft } from "lucide-react";
 import ToggleStatusButton from "@/components/project/ToggleStatusButton";
+import { useProjectStore } from "@/store/projectStore";
 
 export default function KanbanBoard() {
   const { tasks, moveTask } = useTaskStore();
   const { projectId, workspaceId } = useParams();
   const [activeCard, setActiveCard] = React.useState<Task | null>(null);
+  const projects = useProjectStore((s) => s.projects);
+  const project = projects.find((p) => p.id === projectId);
+  const isOnHold = project?.status === "on_hold";
 
   const projectTasks = tasks.filter((t) => t.project_id === projectId);
   const taskCount = projectTasks.length;
@@ -22,7 +26,7 @@ export default function KanbanBoard() {
   const percent =
     taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0;
 
-  const projectColor = projectTasks[0]?.projects?.color;
+  const projectColor = project?.color;
   return (
     <DragDropProvider
       onDragStart={(event) => {
@@ -70,7 +74,11 @@ export default function KanbanBoard() {
           </div>
           <Progress
             value={percent}
-            indicatorClassName={getProjectColor(projectColor || "").bg}
+            indicatorClassName={
+              isOnHold
+                ? "bg-muted-foreground"
+                : getProjectColor(projectColor || "").bg
+            }
           />
         </div>
       </div>

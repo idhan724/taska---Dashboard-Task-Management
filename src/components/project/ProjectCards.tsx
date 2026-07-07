@@ -14,7 +14,7 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ project, i }: ProjectCardProps) {
-  const { tasks } = useTaskStore();
+  const tasks = useTaskStore((s) => s.tasks);
   const { workspaceId } = useParams();
 
   const taskCount = tasks.filter((t) => t.project_id === project.id).length;
@@ -23,6 +23,7 @@ export default function ProjectCard({ project, i }: ProjectCardProps) {
   ).length;
   const percent =
     taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0;
+  const isOnHold = project?.status === "on_hold";
   return (
     <motion.div
       key={project.id}
@@ -61,7 +62,11 @@ export default function ProjectCard({ project, i }: ProjectCardProps) {
           </div>
           <Progress
             value={percent}
-            indicatorClassName={getProjectColor(project.color).bg}
+            indicatorClassName={
+              isOnHold
+                ? "bg-muted-foreground"
+                : getProjectColor(project.color).bg
+            }
           />
           <div className="flex items-center mt-4 relative z-20 pointer-events-auto">
             <EditProjectButton project={project} />

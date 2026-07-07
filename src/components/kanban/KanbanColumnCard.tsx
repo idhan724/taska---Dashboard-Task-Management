@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useProjectStore } from "@/store/projectStore";
 
 interface KanbanColumnCardProps {
   column: (typeof columns)[number];
@@ -17,15 +18,22 @@ export default function KanbanColumnCard({
   column,
   projectId,
 }: KanbanColumnCardProps) {
+  const projects = useProjectStore((s) => s.projects);
+  const project = projects.find((p) => p.id === projectId);
+  const isOnHold = project?.status === "on_hold";
   const { getTasksByStatus } = useTaskStore();
   const taskByStatus = getTasksByStatus(projectId, column.id);
   const { ref, isDropTarget } = useDroppable({ id: column.id });
+
   return (
     <div
       key={column.id}
       ref={ref}
       className={cn(
-        "flex flex-col rounded-2xl p-4 min-h-55 transition-all duration-200 ring-1 ring-foreground/10 shadow-sm",
+        "flex flex-col rounded-2xl p-4 min-h-55 transition-all duration-200 shadow-sm",
+        isOnHold
+          ? "bg-muted-foreground/10 ring-1 ring-muted-foreground/10"
+          : "ring-1 ring-foreground/10 ",
         isDropTarget && "bg-neutral-100 ring-2 ring-dashed ring-neutral-300",
       )}
     >
@@ -45,6 +53,7 @@ export default function KanbanColumnCard({
           trigger={
             <Button
               variant="ghost"
+              disabled={isOnHold}
               size="sm"
               className="text-neutral-400 hover:text-neutral-700 rounded-lg"
             >
@@ -71,6 +80,7 @@ export default function KanbanColumnCard({
         trigger={
           <Button
             variant="ghost"
+            disabled={isOnHold}
             size="sm"
             className="mt-3 w-full text-[12px] text-neutral-400 border border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl h-8 hover:bg-white dark:hover:bg-neutral-700/50 hover:text-neutral-600 hover:border-neutral-400 transition"
           >

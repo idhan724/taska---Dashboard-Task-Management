@@ -19,9 +19,13 @@ import { Spinner } from "@/components/ui/spinner";
 
 interface DeleteTaskButtonProps {
   task: Task;
+  isOnHold: boolean;
 }
 
-export default function DeleteTaskButton({ task }: DeleteTaskButtonProps) {
+export default function DeleteTaskButton({
+  task,
+  isOnHold,
+}: DeleteTaskButtonProps) {
   const { deleteTask } = useTaskStore();
   const [isDeleting, setIsDeleting] = React.useState(false);
 
@@ -40,6 +44,7 @@ export default function DeleteTaskButton({ task }: DeleteTaskButtonProps) {
       <AlertDialogTrigger asChild>
         <Button
           size="sm"
+          disabled={isOnHold}
           onClick={(e) => e.stopPropagation()}
           className="bg-background text-neutral-400 hover:text-red-500 hover:bg-red-50"
         >
