@@ -4,7 +4,6 @@ import { useAuthStore } from "@/store/authStore";
 import {
   LayoutDashboard,
   Settings,
-  LogOut,
   Users,
   Folder,
   ChevronRight,
@@ -32,14 +31,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { isLiveMode } from "@/lib/supabase";
 import { Avatar } from "@/components/ui/avatar";
 
 export default function AppSidebar() {
   const { workspaceId } = useParams();
   const { workspaces, activeWorkspace, setActiveWorkspace } =
     useWorkspaceStore();
-  const { profile, signOut } = useAuthStore();
+  const { profile } = useAuthStore();
   const navigate = useNavigate();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -154,34 +152,21 @@ export default function AppSidebar() {
 
       {profile && (
         <SidebarFooter className="border-t border-sidebar-border p-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton size="lg" tooltip={profile.full_name}>
-                <Avatar
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(profile.full_name)}`}
-                >
-                  {getInitials(profile.full_name)}
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium truncate">
-                    {profile.full_name}
-                  </p>
-                  <p className="text-xs text-sidebar-foreground/60 truncate">
-                    {profile.email}
-                  </p>
-                </div>
-                <ChevronsUpDown className="ml-auto size-4" />
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            {isLiveMode && (
-              <DropdownMenuContent side="right" align="end" className="w-48">
-                <DropdownMenuItem variant="destructive" onClick={signOut}>
-                  <LogOut />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            )}
-          </DropdownMenu>
+          <div className="flex items-center justify-center gap-2">
+            <Avatar
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 ${getAvatarColor(profile.full_name)}`}
+            >
+              {getInitials(profile.full_name)}
+            </Avatar>
+            <div>
+              <p className="text-sm font-medium truncate">
+                {profile.full_name}
+              </p>
+              <p className="text-xs text-sidebar-foreground/60 truncate">
+                {profile.email}
+              </p>
+            </div>
+          </div>
         </SidebarFooter>
       )}
 

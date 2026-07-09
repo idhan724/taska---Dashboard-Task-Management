@@ -1,5 +1,6 @@
-import { useWorkspaceStore } from "../../store/workspaceStore";
-import { SidebarTrigger } from "../ui/sidebar";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import SignOutButton from "@/components/layout/SignOutButton";
 
 export default function Header() {
   const { activeWorkspace } = useWorkspaceStore();
@@ -10,6 +11,7 @@ export default function Header() {
         <SidebarTrigger />
         <h1 className="font-semibold text-gray-800">{activeWorkspace?.name}</h1>
       </div>
+      <SignOutButton />
     </header>
   );
 }
