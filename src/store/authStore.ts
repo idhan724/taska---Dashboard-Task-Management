@@ -12,6 +12,7 @@ interface AuthStore {
   initialize: () => Promise<void>;
   signUp: (email: string, password: string, fullname: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGithub: () => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (id: string, updates: Partial<Profile>) => Promise<void>;
 }
@@ -89,7 +90,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
       if (error) throw error;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to SignUp";
+      const message = err instanceof Error ? err.message : "Failed to sign up";
       set({ error: message });
       throw err;
     } finally {
@@ -106,7 +107,27 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
       if (error) throw error;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to SignIn";
+      const message = err instanceof Error ? err.message : "Failed to sign in";
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  signInWithGithub: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to continue with Github";
       set({ error: message });
       throw err;
     } finally {
@@ -121,7 +142,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       if (error) throw error;
       set({ user: null, profile: null });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to SignOut";
+      const message = err instanceof Error ? err.message : "Failed to sign out";
       set({ error: message });
       throw err;
     } finally {
