@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { isLiveMode, supabase } from "@/lib/supabase";
 import type { Profile } from "@/types";
-import type { User } from "@supabase/supabase-js";
+import type { Subscription, User } from "@supabase/supabase-js";
 import { mockCurrentUser } from "@/data/staticData";
 
 interface AuthStore {
@@ -9,7 +9,7 @@ interface AuthStore {
   profile: Profile | null;
   isLoading: boolean;
   error: string | null;
-  initialize: () => Promise<void>;
+  initialize: () => Promise<Subscription | undefined>;
   signUp: (email: string, password: string, fullname: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGithub: () => Promise<void>;
@@ -28,54 +28,61 @@ export const useAuthStore = create<AuthStore>((set) => ({
     if (!isLiveMode) {
       await new Promise((r) => setTimeout(r, 2000));
       set({ user: { id: mockCurrentUser.id } as User, isLoading: false });
-      return;
+      return undefined;
     }
 
-    try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: profile, error: profileError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-        if (profileError) throw profileError;
+    const authPromise = new Promise<Subscription | undefined>(
+      (resolve, reject) => {
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange((event, session) => {
+          try {
+            if (session?.user) {
+              set({ user: session.user });
+              supabase
+                .from("users")
+                .select("*")
+                .eq("id", session.user.id)
+                .maybeSingle()
+                .then(({ data: profile, error: profileError }) => {
+                  if (profileError) {
+                    set({ error: profileError.message });
+                    return;
+                  }
+                  set({ profile: profile ?? null });
+                });
+            } else {
+              set({ user: null, profile: null });
+            }
 
-        set({ user: session.user, profile });
-      }
-      if (sessionError) throw sessionError;
-
-      supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session?.user) {
-          const { data: profile, error: profileError } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-
-          if (profileError) {
-            console.error(profileError);
-            set({ user: session.user, profile: null });
-            return;
+            if (event === "INITIAL_SESSION") {
+              clearTimeout(timeoutId);
+              resolve(subscription);
+            }
+          } catch (err) {
+            const message =
+              err instanceof Error ? err.message : "Failed to initialize";
+            set({ error: message });
+            clearTimeout(timeoutId);
+            reject(err);
+          } finally {
+            set({ isLoading: false });
           }
+        });
+      },
+    );
 
-          set({ user: session.user, profile });
-        } else {
-          set({ user: null, profile: null });
-        }
-      });
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to initialize user";
-      set({ error: message });
-      throw err;
-    } finally {
-      set({ isLoading: false });
-    }
+    const timeoutPromise = new Promise<undefined>((_resolve, reject) => {
+      timeoutId = setTimeout(() => {
+        const message = "Failed to restore session, please sign in again";
+        set({ user: null, profile: null, isLoading: false, error: message });
+        reject(new Error(message));
+      }, 8000);
+    });
+
+    return Promise.race([authPromise, timeoutPromise]);
   },
 
   signUp: async (email, password, fullName) => {
