@@ -1,8 +1,7 @@
-import * as React from "react";
 import { motion } from "motion/react";
 import { useTaskStore } from "@/store/taskStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import { Plus, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { useProjectStore } from "@/store/projectStore";
 import { isLiveMode } from "@/lib/supabase";
 import { StatsCards } from "@/components/dashboard/StatsCard";
@@ -10,30 +9,13 @@ import { useAuthStore } from "@/store/authStore";
 import { TaskOverview } from "@/components/dashboard/TaskOverview";
 import { ProjectOverview } from "@/components/dashboard/ProjectOverview";
 import { RecentTasks } from "@/components/dashboard/RecentTasks";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import AddWorkspaceButton from "@/components/dashboard/AddWorkspaceButton";
 
 export default function Dashboard() {
   const { profile } = useAuthStore();
-  const { tasks, isLoading: isLoadingTasks } = useTaskStore();
-  const { projects, isLoading: isLoadingProjects } = useProjectStore();
-  const {
-    members,
-    createWorkspaces,
-    isLoading: isLoadingWorkspace,
-  } = useWorkspaceStore();
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [isCreating, setIsCreating] = React.useState(false);
+  const { tasks, isFetching: isFetchingTasks } = useTaskStore();
+  const { projects, isFetching: isFetchingProjects } = useProjectStore();
+  const { members, isFetching: isFetchingWorkspace } = useWorkspaceStore();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -61,21 +43,6 @@ export default function Dashboard() {
     completed: projects.filter((t) => t.status === "completed").length,
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsCreating(true);
-    try {
-      await createWorkspaces(name, description);
-      setName("");
-      setDescription("");
-      setIsDialogOpen(false);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -88,43 +55,7 @@ export default function Dashboard() {
               Here's what's happening across your team today.
             </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Workspace
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Workspace</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Workspace Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Contoh: Tim Desain"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="desc">Description (optional)</Label>
-                  <Input
-                    id="desc"
-                    placeholder="Brief description of the workspace"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isCreating}>
-                  {isCreating ? "Creating..." : "Create Workspace"}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <AddWorkspaceButton />
         </div>
       </motion.div>
 
@@ -146,7 +77,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <StatsCards stats={stats} isLoading={isLoadingWorkspace} />
+      <StatsCards stats={stats} isLoading={isFetchingWorkspace} />
 
       <TaskOverview
         todo={stats.todo}
@@ -154,12 +85,12 @@ export default function Dashboard() {
         done={stats.done}
         overdue={stats.overdue}
         totalTasks={stats.totalTasks}
-        isLoading={isLoadingTasks}
+        isLoading={isFetchingTasks}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ProjectOverview projects={projects} isLoading={isLoadingProjects} />
-        <RecentTasks tasks={tasks} isLoading={isLoadingTasks} />
+        <ProjectOverview projects={projects} isLoading={isFetchingProjects} />
+        <RecentTasks tasks={tasks} isLoading={isFetchingTasks} />
       </div>
     </div>
   );
