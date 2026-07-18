@@ -11,10 +11,13 @@ interface WorkspaceStore {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
   members: WorkspaceMember[];
-  isLoading: boolean;
+  isFetching: boolean;
+  isSubmitting: boolean;
   error: string | null;
   fetchWorkspaces: () => Promise<void>;
-  createWorkspaces: (name: string, description?: string) => Promise<void>;
+  addWorkspaces: (
+    workspace: Omit<Workspace, "id" | "created_at" | "owner_id">,
+  ) => Promise<void>;
   updateWorkspaces: (id: string, data: Partial<Workspace>) => Promise<void>;
   deleteWorkspaces: (id: string) => Promise<void>;
   setActiveWorkspace: (workspace: Workspace) => void;
@@ -24,39 +27,30 @@ interface WorkspaceStore {
   leaveWorkspace: (workspaceId: string) => Promise<void>;
 }
 
-const userWorkspaces = mockWorkspaces.filter(
-  (w) => w.owner_id === mockCurrentUser.id,
-);
-
-const createEmptyWorkspace = async (userId: string) => {
-  const { data: workspace, error: wsError } = await supabase
-    .from("workspaces")
-    .insert({ name: "My Workspace", description: "", owner_id: userId })
-    .select()
-    .single();
-
-  if (wsError) throw wsError;
-
-  const { error: memberError } = await supabase
-    .from("workspace_members")
-    .insert({ workspace_id: workspace.id, user_id: userId, role: "Owner" });
-
-  if (memberError) throw memberError;
-
-  return workspace;
-};
-
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
-  workspaces: userWorkspaces,
-  activeWorkspace: userWorkspaces[0],
-  members: mockMembers.filter((m) => m.workspace_id === userWorkspaces[0]?.id),
-  isLoading: false,
+  workspaces: [],
+  activeWorkspace: null,
+  members: [],
+  isFetching: false,
+  isSubmitting: false,
   error: null,
 
   fetchWorkspaces: async () => {
-    if (!isLiveMode) return;
+    set({ isFetching: true, error: null });
+    if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
+      const userWorkspaces = mockWorkspaces.filter(
+        (w) => w.owner_id === mockCurrentUser.id,
+      );
+      set({
+        workspaces: userWorkspaces,
+        activeWorkspace: userWorkspaces[0] ?? null,
+        isFetching: false,
+      });
 
-    set({ isLoading: true, error: null });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from("workspaces")
@@ -67,18 +61,22 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       const workspaces = data || [];
       set({ workspaces, activeWorkspace: workspaces[0] ?? null });
     } catch (err) {
-      set({ error: "Failed to load workspace" });
+      const message =
+        err instanceof Error ? err.message : "Failed to load workspace";
+      set({ error: message });
+      throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isFetching: false });
     }
   },
 
-  createWorkspaces: async (name, description) => {
+  addWorkspaces: async (workspace) => {
+    set({ isSubmitting: true, error: null });
     if (!isLiveMode) {
+      await new Promise((r) => setTimeout(r, 2000));
       const newWorkspace: Workspace = {
+        ...workspace,
         id: `ws-${Date.now()}`,
-        name,
-        description: description ?? null,
         owner_id: mockCurrentUser.id,
         created_at: new Date().toISOString(),
       };
@@ -95,54 +93,56 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
 
       set((state) => ({
         workspaces: [newWorkspace, ...state.workspaces],
-        activeWorkspace:
-          state.workspaces.length === 0 ? newWorkspace : state.activeWorkspace,
-        members: newMember ? [newMember] : state.members,
+        members: [newMember, ...state.members],
+        activeWorkspace: newWorkspace,
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("user not found");
 
-      const { data: workspace, error: wsError } = await supabase
+      const workspaceData = {
+        ...workspace,
+        owner_id: user.id,
+      };
+
+      const { error: insertError } = await supabase
         .from("workspaces")
-        .insert({ name, description, owner_id: user.id })
-        .select()
+        .insert(workspaceData);
+
+      if (insertError) throw insertError;
+
+      const { data, error: selectError } = await supabase
+        .from("workspaces")
+        .select("*")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
         .single();
 
-      if (wsError) throw wsError;
-
-      const { error: memberError } = await supabase
-        .from("workspace_members")
-        .insert({
-          workspace_id: workspace.id,
-          user_id: user.id,
-          role: "Owner",
-        });
-
-      if (memberError) throw memberError;
+      if (selectError) throw selectError;
 
       set((state) => ({
-        workspaces: [workspace, ...state.workspaces],
-        activeWorkspace:
-          state.workspaces.length === 0 ? workspace : state.activeWorkspace,
+        workspaces: [data as Workspace, ...state.workspaces],
+        activeWorkspace: data as Workspace,
       }));
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to create workspace";
+        err instanceof Error ? err.message : "Failed to add workspace";
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
   updateWorkspaces: async (id, data) => {
+    set({ isSubmitting: true, error: null });
     if (!isLiveMode) {
       set((state) => ({
         workspaces: state.workspaces.map((w) =>
@@ -152,11 +152,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
           state.activeWorkspace?.id === id
             ? { ...state.activeWorkspace, ...data }
             : state.activeWorkspace,
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { data: updated, error } = await supabase
         .from("workspaces")
@@ -178,11 +178,12 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
   deleteWorkspaces: async (id) => {
+    set({ isSubmitting: true, error: null });
     if (!isLiveMode) {
       const remainingWorkspaces = get().workspaces.filter((w) => w.id !== id);
 
@@ -209,6 +210,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
           workspaces: [newWorkspace],
           activeWorkspace: newWorkspace,
           members: [newMember],
+          isSubmitting: false,
         });
         return;
       }
@@ -219,43 +221,23 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
           state.activeWorkspace?.id === id
             ? remainingWorkspaces[0]
             : state.activeWorkspace,
+        isSubmitting: false,
       }));
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { error } = await supabase.from("workspaces").delete().eq("id", id);
       if (error) throw error;
 
-      const remainingWorkspaces = get().workspaces.filter((w) => w.id !== id);
-
-      if (remainingWorkspaces.length === 0) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("User not found");
-
-        const newWorkspace = await createEmptyWorkspace(user.id);
-
-        set({ workspaces: [newWorkspace], activeWorkspace: newWorkspace });
-        return;
-      }
-
-      set((state) => ({
-        workspaces: remainingWorkspaces,
-        activeWorkspace:
-          state.activeWorkspace?.id === id
-            ? remainingWorkspaces[0]
-            : state.activeWorkspace,
-      }));
+      await get().fetchWorkspaces();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to delete workspace";
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
@@ -264,6 +246,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   },
 
   fetchMembers: async (workspaceId) => {
+    set({ isFetching: true, error: null });
     if (!isLiveMode) {
       set({
         members: mockMembers.filter((m) => m.workspace_id === workspaceId),
@@ -271,7 +254,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       return;
     }
 
-    set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
         .from("workspace_members")
@@ -286,13 +268,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isFetching: false });
     }
   },
 
   inviteMember: async (workspaceId, email) => {
     if (!isLiveMode) return;
-    set({ isLoading: true, error: null });
+
+    set({ isSubmitting: true, error: null });
     try {
       const {
         data: { user },
@@ -312,14 +295,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
   removeMember: async (workspaceId, userId) => {
     if (!isLiveMode) return;
 
-    set({ isLoading: true, error: null });
+    set({ isSubmitting: true, error: null });
     try {
       const { error } = await supabase
         .from("workspace_members")
@@ -338,13 +321,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 
   leaveWorkspace: async (workspaceId) => {
     if (!isLiveMode) return;
-    set({ isLoading: true, error: null });
+
+    set({ isSubmitting: true, error: null });
     try {
       const {
         data: { user },
@@ -368,7 +352,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       set({ error: message });
       throw err;
     } finally {
-      set({ isLoading: false });
+      set({ isSubmitting: false });
     }
   },
 }));
