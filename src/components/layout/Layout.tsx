@@ -23,7 +23,7 @@ export default function Layout() {
       fetchProjects(workspace.id);
       fetchMembers(workspace.id);
     }
-  }, [workspaceId, workspaces]);
+  }, [workspaceId]);
 
   return (
     <TooltipProvider>
