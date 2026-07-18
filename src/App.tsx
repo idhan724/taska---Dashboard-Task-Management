@@ -13,27 +13,54 @@ import { Spinner } from "@/components/ui/spinner";
 import SignUpPage from "@/pages/auth/SignUpPage";
 import SignInPage from "@/pages/auth/SignInPage";
 import ProtectedRoute from "@/pages/auth/ProtectedRoute";
+import { toast } from "sonner";
+import type { Subscription } from "@supabase/supabase-js";
 
 function App() {
   const { initialize, user } = useAuthStore();
   const { workspaces, fetchWorkspaces } = useWorkspaceStore();
   const [authChecked, setAuthChecked] = React.useState(false);
+  const [workspacesChecked, setWorkspacesChecked] = React.useState(false);
 
   React.useEffect(() => {
+    let subscription: Subscription | undefined;
+
     const init = async () => {
-      await initialize();
-      setAuthChecked(true);
+      try {
+        subscription = await initialize();
+      } catch {
+        toast.error(
+          useAuthStore.getState().error ?? "Failed to initialize user",
+        );
+      } finally {
+        setAuthChecked(true);
+      }
     };
     init();
+
+    return () => subscription?.unsubscribe();
   }, [initialize]);
 
   React.useEffect(() => {
-    if (user) {
-      fetchWorkspaces();
-    }
-  }, [user, fetchWorkspaces]);
+    const fetch = async () => {
+      if (user) {
+        try {
+          await fetchWorkspaces();
+        } catch {
+          toast.error(
+            useWorkspaceStore.getState().error ?? "Failed to load workspace",
+          );
+        } finally {
+          setWorkspacesChecked(true);
+        }
+      } else if (authChecked) {
+        setWorkspacesChecked(true);
+      }
+    };
+    fetch();
+  }, [user, fetchWorkspaces, authChecked]);
 
-  if (!authChecked) {
+  if (!authChecked || (user && !workspacesChecked)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Spinner className="size-6" />
