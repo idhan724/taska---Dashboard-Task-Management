@@ -35,8 +35,7 @@ import { Avatar } from "@/components/ui/avatar";
 
 export default function AppSidebar() {
   const { workspaceId } = useParams();
-  const { workspaces, activeWorkspace, setActiveWorkspace } =
-    useWorkspaceStore();
+  const { workspaces, activeWorkspace } = useWorkspaceStore();
   const { profile } = useAuthStore();
   const navigate = useNavigate();
   const { state } = useSidebar();
@@ -98,7 +97,6 @@ export default function AppSidebar() {
                   <DropdownMenuItem
                     key={ws.id}
                     onClick={() => {
-                      setActiveWorkspace(ws);
                       navigate(`/${ws.id}`);
                     }}
                     className="flex items-center gap-2"
