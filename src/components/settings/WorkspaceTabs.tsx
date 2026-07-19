@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 export default function WorkspaceTabs() {
-  const { activeWorkspace, updateWorkspaces, deleteWorkspaces, isLoading } =
+  const { activeWorkspace, updateWorkspaces, deleteWorkspaces, isSubmitting } =
     useWorkspaceStore();
   const [name, setName] = React.useState(activeWorkspace?.name ?? "");
   const [confirmName, setConfirmName] = React.useState("");
@@ -85,8 +85,8 @@ export default function WorkspaceTabs() {
           />
         </div>
 
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Rename workspace"}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : "Rename workspace"}
         </Button>
       </form>
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 flex items-start justify-between gap-4">
@@ -131,10 +131,10 @@ export default function WorkspaceTabs() {
             <DialogClose>Cancel</DialogClose>
             <Button
               onClick={handleDelete}
-              disabled={!isConfirmed || isLoading}
+              disabled={!isConfirmed || isSubmitting}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              {isLoading ? "Deleting…" : "Yes, delete workspace"}
+              {isSubmitting ? "Deleting…" : "Yes, delete workspace"}
             </Button>
           </DialogContent>
         </Dialog>
