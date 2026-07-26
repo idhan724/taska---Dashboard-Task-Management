@@ -13,7 +13,7 @@ export type WorkspaceMember = Omit<Tables<"workspace_members">, "role"> & {
   profile: Profile;
 };
 
-export type WorkspaceInvite = Tables<"workspace_invites">;
+export type WorkspaceInviteLink = Tables<"workspace_invite_links">;
 
 export type Project = Omit<Tables<"projects">, "status"> & {
   status: ProjectStatus;

@@ -155,52 +155,46 @@ export type Database = {
         }
         Relationships: []
       }
-      workspace_invites: {
+      workspace_invite_links: {
         Row: {
-          accepted_at: string | null
-          created_at: string | null
-          email: string
+          created_at: string
+          created_by: string | null
           expires_at: string
           id: string
-          invited_by: string
           role: string
           token: string
           workspace_id: string
         }
         Insert: {
-          accepted_at?: string | null
-          created_at?: string | null
-          email: string
+          created_at?: string
+          created_by?: string | null
           expires_at?: string
           id?: string
-          invited_by: string
           role?: string
           token?: string
           workspace_id: string
         }
         Update: {
-          accepted_at?: string | null
-          created_at?: string | null
-          email?: string
+          created_at?: string
+          created_by?: string | null
           expires_at?: string
           id?: string
-          invited_by?: string
           role?: string
           token?: string
           workspace_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "workspace_invites_invited_by_fkey"
-            columns: ["invited_by"]
+            foreignKeyName: "workspace_invite_links_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "workspace_invites_workspace_id_fkey"
+            foreignKeyName: "workspace_invite_links_workspace_id_fkey"
             columns: ["workspace_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
@@ -292,7 +286,52 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_invite_link: { Args: { p_token: string }; Returns: Json }
+      debug_auth: { Args: never; Returns: Json }
+      get_or_create_invite_link: {
+        Args: { p_workspace_id: string }
+        Returns: Json
+      }
+      is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
+      is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
+      preview_invite_link: { Args: { p_token: string }; Returns: Json }
+      regenerate_invite_link: {
+        Args: { p_workspace_id: string }
+        Returns: Json
+      }
+      test_insert_no_returning: { Args: { _name: string }; Returns: undefined }
+      test_insert_with_returning: {
+        Args: { _name: string }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "workspaces"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      test_insert_workspace: {
+        Args: { _name: string }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "workspaces"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
