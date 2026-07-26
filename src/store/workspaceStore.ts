@@ -13,6 +13,7 @@ interface WorkspaceStore {
   members: WorkspaceMember[];
   isFetching: boolean;
   isSubmitting: boolean;
+  isAcceptingInvite: boolean;
   error: string | null;
   fetchWorkspaces: () => Promise<void>;
   addWorkspaces: (
@@ -22,9 +23,12 @@ interface WorkspaceStore {
   deleteWorkspaces: (id: string) => Promise<void>;
   setActiveWorkspace: (workspace: Workspace) => void;
   fetchMembers: (workspaceId: string) => Promise<void>;
-  inviteMember: (workspaceId: string, email: string) => Promise<void>;
   removeMember: (workspaceId: string, userId: string) => Promise<void>;
   leaveWorkspace: (workspaceId: string) => Promise<void>;
+  regenerateInviteLink: (workspaceId: string) => Promise<string>;
+  getInviteLink: (workspaceId: string) => Promise<string>;
+  previewInviteLink: (token: string) => Promise<{ workspaceName: string }>;
+  acceptInviteLink: (token: string) => Promise<string | undefined>;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
@@ -32,6 +36,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   activeWorkspace: null,
   members: [],
   isFetching: false,
+  isAcceptingInvite: false,
   isSubmitting: false,
   error: null,
 
@@ -272,33 +277,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
   },
 
-  inviteMember: async (workspaceId, email) => {
-    if (!isLiveMode) return;
-
-    set({ isSubmitting: true, error: null });
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not found");
-
-      const { error } = await supabase.from("workspace_invites").insert({
-        workspace_id: workspaceId,
-        email,
-        invited_by: user.id,
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to invite member";
-      set({ error: message });
-      throw err;
-    } finally {
-      set({ isSubmitting: false });
-    }
-  },
-
   removeMember: async (workspaceId, userId) => {
     if (!isLiveMode) return;
 
@@ -353,6 +331,83 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       throw err;
     } finally {
       set({ isSubmitting: false });
+    }
+  },
+
+  regenerateInviteLink: async (workspaceId) => {
+    if (!isLiveMode) return "";
+
+    set({ isSubmitting: true, error: null });
+    try {
+      const { data, error } = await supabase.rpc("regenerate_invite_link", {
+        p_workspace_id: workspaceId,
+      });
+      if (error) throw error;
+
+      const token = (data as { token: string }).token;
+      return `${window.location.origin}/invite/accept?token=${token}`;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to regenerate link";
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isSubmitting: false });
+    }
+  },
+
+  getInviteLink: async (workspaceId) => {
+    if (!isLiveMode) return "";
+
+    set({ isSubmitting: true, error: null });
+    try {
+      const { data, error } = await supabase.rpc("get_or_create_invite_link", {
+        p_workspace_id: workspaceId,
+      });
+      if (error) throw error;
+
+      const token = (data as { token: string }).token;
+      return `${window.location.origin}/invite/accept?token=${token}`;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to get invite link";
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isSubmitting: false });
+    }
+  },
+
+  previewInviteLink: async (token) => {
+    const { data, error } = await supabase.rpc("preview_invite_link", {
+      p_token: token,
+    });
+
+    if (error) throw error;
+    return {
+      workspaceName: (data as { workspace_name: string }).workspace_name,
+    };
+  },
+  acceptInviteLink: async (token) => {
+    if (!isLiveMode) return;
+
+    set({ isAcceptingInvite: true, error: null });
+    try {
+      const { data, error } = await supabase.rpc("accept_invite_link", {
+        p_token: token,
+      });
+      if (error) throw error;
+
+      await get().fetchWorkspaces();
+
+      return (data as { workspace_id: string })?.workspace_id;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to accept invite";
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isAcceptingInvite: false });
     }
   },
 }));
