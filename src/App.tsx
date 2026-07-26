@@ -15,6 +15,7 @@ import SignInPage from "@/pages/auth/SignInPage";
 import ProtectedRoute from "@/pages/auth/ProtectedRoute";
 import { toast } from "sonner";
 import type { Subscription } from "@supabase/supabase-js";
+import InviteAcceptPage from "@/components/team/InviteAcceptPage";
 
 function App() {
   const { initialize, user } = useAuthStore();
@@ -73,6 +74,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/invite/accept" element={<InviteAcceptPage />} />
         <Route element={<ProtectedRoute />}>
           <Route
             path="/"
