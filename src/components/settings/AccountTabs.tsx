@@ -17,25 +17,18 @@ export default function AccountTabs() {
   const [isOAuthUser, setIsOAuthUser] = React.useState(false);
 
   React.useEffect(() => {
-    let isMounted = true;
-
     const checkProvider = async () => {
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        if (isMounted) {
-          setIsOAuthUser(user?.app_metadata?.provider !== "email");
-        }
+        setIsOAuthUser(user?.app_metadata?.provider !== "email");
       } catch (err) {
         console.error("Failed to check auth provider:", err);
       }
     };
 
     checkProvider();
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
