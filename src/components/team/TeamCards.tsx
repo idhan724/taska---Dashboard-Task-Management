@@ -5,11 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { getAvatarColor, getInitials } from "@/lib/utils";
 
-function TeamCards() {
-  const { members, isLoading } = useWorkspaceStore();
+export default function TeamCards() {
+  const { members, isFetching } = useWorkspaceStore();
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-7">
-      {isLoading
+      {isFetching
         ? [...Array(members.length)].map((_, i) => (
             <Skeleton key={i} className="h-28" />
           ))
@@ -38,5 +38,3 @@ function TeamCards() {
     </div>
   );
 }
-
-export default TeamCards;
