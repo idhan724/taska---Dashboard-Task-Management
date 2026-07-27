@@ -4,12 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { toast } from "sonner";
-import DeleteWorkspaceButton from "./DeleteWorkspaceButton";
+import DeleteWorkspaceButton from "@/components/settings/DeleteWorkspaceButton";
+import { useAuthStore } from "@/store/authStore";
+import LeaveWorkspaceButton from "./LeaveWorkspaceButton";
 
 export default function WorkspaceTabs() {
+  const { profile } = useAuthStore();
   const { activeWorkspace, updateWorkspaces } = useWorkspaceStore();
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [name, setName] = React.useState(activeWorkspace?.name ?? "");
+
+  const isOwner = activeWorkspace?.owner_id === profile?.id;
 
   React.useEffect(() => {
     setName(activeWorkspace?.name ?? "");
@@ -59,28 +64,45 @@ export default function WorkspaceTabs() {
             placeholder="My Workspace"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            disabled={!isOwner}
             required
           />
         </div>
 
-        <Button type="submit" disabled={isUpdating}>
+        <Button type="submit" disabled={isUpdating || !isOwner}>
           {isUpdating ? "Saving..." : "Rename workspace"}
         </Button>
       </form>
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 flex items-start justify-between gap-4">
-        <div className="space-y-0.5">
-          <p className="text-sm font-medium text-foreground">
-            Delete workspace
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Permanently delete{" "}
-            <span className="font-medium text-foreground">
-              {activeWorkspace?.name}
-            </span>{" "}
-            and all its projects, tasks, and members. This cannot be undone.
-          </p>
-        </div>
-        <DeleteWorkspaceButton />
+        {isOwner ? (
+          <>
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium text-foreground">
+                Delete workspace
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Permanently delete{" "}
+                <span className="font-medium text-foreground">
+                  {activeWorkspace?.name}
+                </span>{" "}
+                and all its projects, tasks, and members. This cannot be undone.
+              </p>
+            </div>
+            <DeleteWorkspaceButton />
+          </>
+        ) : (
+          <>
+            <div className="space-y-0 5">
+              <p className="text-sm font-medium text-foreground">
+                Leave workspace
+              </p>
+              <p className="text-xs text-muted-foreground">
+                You will lose access to this workspace and its projects.
+              </p>
+            </div>
+            <LeaveWorkspaceButton />
+          </>
+        )}
       </div>
     </div>
   );
