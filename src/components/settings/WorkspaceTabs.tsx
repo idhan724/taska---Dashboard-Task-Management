@@ -1,29 +1,16 @@
 import * as React from "react";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import DeleteWorkspaceButton from "./DeleteWorkspaceButton";
 
 export default function WorkspaceTabs() {
-  const { activeWorkspace, updateWorkspaces, deleteWorkspaces, isSubmitting } =
-    useWorkspaceStore();
+  const { activeWorkspace, updateWorkspaces } = useWorkspaceStore();
+  const [isUpdating, setIsUpdating] = React.useState(false);
   const [name, setName] = React.useState(activeWorkspace?.name ?? "");
-  const [confirmName, setConfirmName] = React.useState("");
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const navigate = useNavigate();
 
-  const isConfirmed = confirmName.trim() === activeWorkspace?.name;
   React.useEffect(() => {
     setName(activeWorkspace?.name ?? "");
   }, [activeWorkspace?.id]);
@@ -36,6 +23,7 @@ export default function WorkspaceTabs() {
       return;
     }
 
+    setIsUpdating(true);
     try {
       await updateWorkspaces(activeWorkspace.id, { name: name });
       toast.success("Workspace renamed");
@@ -43,18 +31,8 @@ export default function WorkspaceTabs() {
       toast.error(
         useWorkspaceStore.getState().error ?? "Failed to update workspace",
       );
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!activeWorkspace || !isConfirmed) return;
-
-    try {
-      await deleteWorkspaces(activeWorkspace.id);
-      toast.success("Workspace deleted");
-      navigate("/");
-    } catch {
-      toast.error("Failed to delete workspace");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -85,8 +63,8 @@ export default function WorkspaceTabs() {
           />
         </div>
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Rename workspace"}
+        <Button type="submit" disabled={isUpdating}>
+          {isUpdating ? "Saving..." : "Rename workspace"}
         </Button>
       </form>
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 flex items-start justify-between gap-4">
@@ -102,42 +80,7 @@ export default function WorkspaceTabs() {
             and all its projects, tasks, and members. This cannot be undone.
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="destructive">Delete</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete workspace?</DialogTitle>
-            </DialogHeader>
-            <DialogDescription>
-              This will permanently delete{" "}
-              <span className="font-semibold text-foreground">
-                {activeWorkspace?.name}
-              </span>{" "}
-              along with all projects and tasks inside it.
-            </DialogDescription>
-            <Label
-              className="text-xs font-medium text-muted-foreground"
-              htmlFor="confirm-name"
-            >{`Type "${activeWorkspace?.name}" to confirm`}</Label>
-            <Input
-              id="confirm-name"
-              placeholder={activeWorkspace?.name}
-              value={confirmName}
-              onChange={(e) => setConfirmName(e.target.value)}
-              autoFocus
-            />
-            <DialogClose>Cancel</DialogClose>
-            <Button
-              onClick={handleDelete}
-              disabled={!isConfirmed || isSubmitting}
-              className="bg-red-600 text-white hover:bg-red-700"
-            >
-              {isSubmitting ? "Deleting…" : "Yes, delete workspace"}
-            </Button>
-          </DialogContent>
-        </Dialog>
+        <DeleteWorkspaceButton />
       </div>
     </div>
   );
