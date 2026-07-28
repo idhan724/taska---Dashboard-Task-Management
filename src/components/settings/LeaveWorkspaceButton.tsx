@@ -27,10 +27,12 @@ export default function LeaveWorkspaceButton() {
     setIsLeaving(true);
     try {
       await leaveWorkspace(activeWorkspace.id);
-      toast.success("Success leaving workspace");
+      toast.success("Successfully leaving workspace");
       navigate("/");
     } catch {
-      toast.error("Failed to leave workspace");
+      toast.error(
+        useWorkspaceStore.getState().error ?? "Failed to leave workspace",
+      );
     } finally {
       setIsLeaving(false);
     }
