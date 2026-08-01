@@ -12,7 +12,7 @@ interface AuthStore {
   initialize: () => Promise<Subscription | undefined>;
   signUp: (email: string, password: string, fullname: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGithub: () => Promise<void>;
+  signInWithGithub: (redirectPath?: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (id: string, updates: Partial<Profile>) => Promise<void>;
   sendPasswordResetEmail: (email: string) => Promise<void>;
@@ -124,13 +124,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
-  signInWithGithub: async () => {
+  signInWithGithub: async (redirectPath?: string) => {
     set({ isLoading: true, error: null });
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}${redirectPath ?? ""}`,
         },
       });
       if (error) throw error;

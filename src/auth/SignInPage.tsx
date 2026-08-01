@@ -27,13 +27,13 @@ export default function SignInPage() {
   const [isSubmitting, setSubmitting] = React.useState(false);
   const [isGithubLoading, setGithubLoading] = React.useState(false);
 
+  const locationState = location.state as { from?: string } | null;
+
   if (user) {
-    const redirectTo =
-      (location.state as { from?: string } | null)?.from ?? "/";
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to={locationState?.from ?? "/"} replace />;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError(null);
 
@@ -62,7 +62,7 @@ export default function SignInPage() {
   const handleGithubSignIn = async () => {
     setGithubLoading(true);
     try {
-      await signInWithGithub();
+      await signInWithGithub(locationState?.from);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to continue with Github";

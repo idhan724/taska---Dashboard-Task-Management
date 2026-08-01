@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { SiGithub } from "@icons-pack/react-simple-icons";
 
 export default function SignUpPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signUp, signInWithGithub } = useAuthStore();
 
   const [fullName, setFullName] = React.useState("");
@@ -28,11 +29,13 @@ export default function SignUpPage() {
   const [isSubmitting, setSubmitting] = React.useState(false);
   const [isGithubLoading, setGithubLoading] = React.useState(false);
 
+  const locationState = location.state as { from?: string } | null;
+
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={locationState?.from ?? "/"} replace />;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError(null);
 
@@ -53,7 +56,7 @@ export default function SignUpPage() {
     try {
       await signUp(email, password, fullName);
       toast.success("Account created successfully! Please log in.");
-      navigate("/login", { replace: true });
+      navigate("/login", { replace: true, state: locationState });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to SignUp";
       setFormError(message);
@@ -66,7 +69,7 @@ export default function SignUpPage() {
   const handleGithubSignup = async () => {
     setGithubLoading(true);
     try {
-      await signInWithGithub();
+      await signInWithGithub(locationState?.from);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to continue with Github";
