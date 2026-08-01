@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
@@ -16,46 +16,42 @@ import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 
-export default function SignUpPage() {
+export default function SignInPage() {
   const navigate = useNavigate();
-  const { user, signUp, signInWithGithub } = useAuthStore();
+  const location = useLocation();
+  const { user, signIn, signInWithGithub } = useAuthStore();
 
-  const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [formError, setFormError] = React.useState<string | null>(null);
   const [isSubmitting, setSubmitting] = React.useState(false);
   const [isGithubLoading, setGithubLoading] = React.useState(false);
 
   if (user) {
-    return <Navigate to="/" replace />;
+    const redirectTo =
+      (location.state as { from?: string } | null)?.from ?? "/";
+    return <Navigate to={redirectTo} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      setFormError("All fields are required.");
-      return;
-    }
-    if (password.length < 6) {
-      setFormError("Password must be at least 6 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setFormError("Password confirmation does not match.");
+    if (!email || !password) {
+      setFormError("Email and password are required.");
       return;
     }
 
     setSubmitting(true);
     try {
-      await signUp(email, password, fullName);
-      toast.success("Account created successfully! Please log in.");
-      navigate("/login", { replace: true });
+      await signIn(email, password);
+      toast.success("Successfully signed in!");
+      navigate("/", { replace: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to SignUp";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to sign in. Please try again.";
       setFormError(message);
       toast.error(message);
     } finally {
@@ -63,7 +59,7 @@ export default function SignUpPage() {
     }
   };
 
-  const handleGithubSignup = async () => {
+  const handleGithubSignIn = async () => {
     setGithubLoading(true);
     try {
       await signInWithGithub();
@@ -85,19 +81,19 @@ export default function SignUpPage() {
             <img src="/favicon.svg" alt="Taska" className="w-5 h-5" />
             <span className="text-lg font-bold">Taska</span>
           </div>
-          <CardTitle className="text-xl">Create Account</CardTitle>
+          <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
-            Start managing your team's tasks and projects today.
+            Manage your tasks and projects in one place.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <Button
             variant="outline"
-            onClick={handleGithubSignup}
+            onClick={handleGithubSignIn}
             disabled={isGithubLoading}
           >
             {isGithubLoading ? <Spinner /> : <SiGithub />}
-            Continue with GitHub
+            Sign in with GitHub
           </Button>
 
           <div className="flex items-center gap-2">
@@ -107,28 +103,15 @@ export default function SignUpPage() {
             </span>
             <Separator className="flex-1" />
           </div>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                autoComplete="name"
-                placeholder="Your full name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                disabled={isSubmitting}
-                aria-invalid={!!formError}
-              />
-            </div>
 
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="your@email.com"
+                placeholder="nama@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isSubmitting}
@@ -141,28 +124,20 @@ export default function SignUpPage() {
               <Input
                 id="password"
                 type="password"
-                autoComplete="new-password"
-                placeholder="Minimum 6 characters"
+                autoComplete="current-password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isSubmitting}
                 aria-invalid={!!formError}
               />
             </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Repeat your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isSubmitting}
-                aria-invalid={!!formError}
-              />
-            </div>
+            <Link
+              to="/forgot-password"
+              className="text-xs text-muted-foreground hover:underline hover:text-blue-400"
+            >
+              Forgot password?
+            </Link>
 
             {formError && (
               <p className="text-sm text-destructive" role="alert">
@@ -170,23 +145,19 @@ export default function SignUpPage() {
               </p>
             )}
 
-            <Button
-              type="submit"
-              className="mt-1 w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting && <Spinner className="mr-1.5" />}
-              Create Account
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Spinner />}
+              Sign In
             </Button>
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            Don't have an account?{" "}
             <Link
-              to="/login"
-              className="font-medium text-primary hover:underline"
+              to="/signup"
+              className="font-medium text-primary hover:underline hover:text-blue-400"
             >
-              Sign in
+              Create an account
             </Link>
           </p>
         </CardContent>

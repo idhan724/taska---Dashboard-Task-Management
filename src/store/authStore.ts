@@ -15,6 +15,8 @@ interface AuthStore {
   signInWithGithub: () => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (id: string, updates: Partial<Profile>) => Promise<void>;
+  sendPasswordResetEmail: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -177,6 +179,38 @@ export const useAuthStore = create<AuthStore>((set) => ({
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to update users";
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  sendPasswordResetEmail: async (email) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to send reset email";
+      set({ error: message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  updatePassword: async (newPassword) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update password";
       set({ error: message });
       throw err;
     } finally {
