@@ -9,12 +9,13 @@ import { Spinner } from "@/components/ui/spinner";
 import { AlertTriangle } from "lucide-react";
 
 export default function AccountTabs() {
-  const { profile, isLoading, updateProfile } = useAuthStore();
+  const { profile, updateProfile, updatePassword } = useAuthStore();
   const [name, setName] = React.useState(profile?.full_name ?? "");
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [isOAuthUser, setIsOAuthUser] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
     const checkProvider = async () => {
@@ -35,6 +36,7 @@ export default function AccountTabs() {
     e.preventDefault();
     if (!name.trim()) return;
 
+    setIsSubmitting(true);
     try {
       if (newPassword) {
         if (newPassword.length < 6) {
@@ -55,10 +57,7 @@ export default function AccountTabs() {
           return;
         }
 
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: newPassword,
-        });
-        if (passwordError) throw passwordError;
+        await updatePassword(newPassword);
       }
 
       await updateProfile(profile!.id, { full_name: name });
@@ -73,6 +72,8 @@ export default function AccountTabs() {
       }
     } catch {
       toast.error(useAuthStore.getState().error ?? "Failed to update users");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -179,8 +180,8 @@ export default function AccountTabs() {
             </div>
           </>
         )}
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
             <>
               {" "}
               <Spinner />
