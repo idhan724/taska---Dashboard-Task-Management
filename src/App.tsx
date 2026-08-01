@@ -10,12 +10,14 @@ import KanbanBoard from "@/pages/KanbanBoard";
 import { Toaster } from "@/components/ui/sonner";
 import Settings from "@/pages/Settings";
 import { Spinner } from "@/components/ui/spinner";
-import SignUpPage from "@/pages/auth/SignUpPage";
-import SignInPage from "@/pages/auth/SignInPage";
-import ProtectedRoute from "@/pages/auth/ProtectedRoute";
 import { toast } from "sonner";
 import type { Subscription } from "@supabase/supabase-js";
 import InviteAcceptPage from "@/components/team/InviteAcceptPage";
+import SignUpPage from "@/auth/SignUpPage";
+import SignInPage from "@/auth/SignInPage";
+import ForgotPasswordPage from "@/auth/ForgotPasswordPage";
+import ResetPasswordPage from "@/auth/ResetPasswordPage";
+import ProtectedRoute from "@/auth/ProtectedRoute";
 
 function App() {
   const { initialize, user } = useAuthStore();
@@ -74,6 +76,8 @@ function App() {
       <Routes>
         <Route path="/login" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/invite/accept" element={<InviteAcceptPage />} />
         <Route element={<ProtectedRoute />}>
           <Route
