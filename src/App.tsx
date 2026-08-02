@@ -47,6 +47,7 @@ function App() {
   React.useEffect(() => {
     const fetch = async () => {
       if (user) {
+        setWorkspacesChecked(false);
         try {
           await fetchWorkspaces();
         } catch {

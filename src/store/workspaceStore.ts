@@ -29,6 +29,7 @@ interface WorkspaceStore {
   getInviteLink: (workspaceId: string) => Promise<string>;
   previewInviteLink: (token: string) => Promise<{ workspaceName: string }>;
   acceptInviteLink: (token: string) => Promise<string | undefined>;
+  resetWorkspaceState: () => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
@@ -409,5 +410,13 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     } finally {
       set({ isAcceptingInvite: false });
     }
+  },
+  resetWorkspaceState: () => {
+    set({
+      workspaces: [],
+      activeWorkspace: null,
+      members: [],
+      error: null,
+    });
   },
 }));

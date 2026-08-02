@@ -3,6 +3,7 @@ import { isLiveMode, supabase } from "@/lib/supabase";
 import type { Profile } from "@/types";
 import type { Subscription, User } from "@supabase/supabase-js";
 import { mockCurrentUser } from "@/data/staticData";
+import { useWorkspaceStore } from "./workspaceStore";
 
 interface AuthStore {
   user: User | null;
@@ -150,6 +151,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       set({ user: null, profile: null });
+      useWorkspaceStore.getState().resetWorkspaceState();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to sign out";
       set({ error: message });
