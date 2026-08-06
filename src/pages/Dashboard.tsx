@@ -39,7 +39,7 @@ export default function Dashboard() {
         new Date(t.updated_at) >= startOfWeek,
     ).length,
     active: projects.filter((t) => t.status === "active").length,
-    onHold: projects.filter((t) => t.status === "on_hold").length,
+    paused: projects.filter((t) => t.status === "paused").length,
     completed: projects.filter((t) => t.status === "completed").length,
   };
 

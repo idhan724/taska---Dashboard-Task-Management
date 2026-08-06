@@ -3,7 +3,7 @@ import type { Tables } from "@/types/supabase";
 export type Priority = "low" | "medium" | "high";
 export type Status = "todo" | "in-progress" | "done";
 export type WorkspaceRole = "owner" | "member";
-export type ProjectStatus = "active" | "on_hold" | "completed";
+export type ProjectStatus = "active" | "paused" | "completed";
 
 export type Profile = Tables<"users">;
 export type Workspace = Tables<"workspaces">;
@@ -46,6 +46,6 @@ export interface Stats {
   overdue: number;
   doneThisWeek: number;
   active: number;
-  onHold: number;
+  paused: number;
   completed: number;
 }

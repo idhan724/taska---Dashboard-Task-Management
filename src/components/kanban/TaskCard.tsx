@@ -34,10 +34,10 @@ interface TaskCardProps {
 export default function TaskCard({ task, isOverlay }: TaskCardProps) {
   const projects = useProjectStore((s) => s.projects);
   const project = projects.find((p) => p.id === task.project_id);
-  const isOnHold = project?.status === "on_hold";
+  const isPaused = project?.status === "paused";
   const { ref, isDragging } = useDraggable({
     id: task.id,
-    disabled: isOverlay || isOnHold,
+    disabled: isOverlay || isPaused,
   });
 
   const today = new Date();
@@ -52,12 +52,12 @@ export default function TaskCard({ task, isOverlay }: TaskCardProps) {
       ref={ref}
       className={cn(
         "relative transition-opacity",
-        isOnHold
+        isPaused
           ? "cursor-not-allowed"
           : isDragging
             ? "opacity-40 cursor-grabbing"
             : "cursor-grab opacity-100",
-        isOnHold && "bg-foreground/10",
+        isPaused && "bg-foreground/10",
       )}
     >
       <div
@@ -107,8 +107,8 @@ export default function TaskCard({ task, isOverlay }: TaskCardProps) {
         </div>
         {!isOverlay && (
           <div className="flex items-center absolute top-2 right-0 p-1 opacity-0 group-hover/card:opacity-100 transition-opacity text-neutral-400">
-            <EditTaskButton task={task} isOnHold={isOnHold} />
-            <DeleteTaskButton task={task} isOnHold={isOnHold} />
+            <EditTaskButton task={task} isPaused={isPaused} />
+            <DeleteTaskButton task={task} isPaused={isPaused} />
           </div>
         )}
       </CardContent>

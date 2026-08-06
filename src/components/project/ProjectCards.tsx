@@ -23,7 +23,7 @@ export default function ProjectCard({ project, i }: ProjectCardProps) {
   ).length;
   const percent =
     taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0;
-  const isOnHold = project?.status === "on_hold";
+  const isPaused = project?.status === "paused";
   return (
     <motion.div
       key={project.id}
@@ -63,7 +63,7 @@ export default function ProjectCard({ project, i }: ProjectCardProps) {
           <Progress
             value={percent}
             indicatorClassName={
-              isOnHold
+              isPaused
                 ? "bg-muted-foreground"
                 : getProjectColor(project.color).bg
             }

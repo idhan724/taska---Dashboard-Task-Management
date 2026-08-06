@@ -150,7 +150,7 @@ export const mockProjects: Project[] = [
     workspace_id: "ws-002",
     name: "Mobile App",
     description: "React Native mobile companion app",
-    status: "on_hold",
+    status: "paused",
     color: "amber",
     created_at: daysAgo(35),
   },

@@ -84,15 +84,15 @@ export const statusProject: Record<
 > = {
   active: {
     label: "active",
-    className: "bg-emerald-50 text-emerald-700",
+    className: "bg-emerald-100 text-emerald-500",
   },
-  on_hold: {
-    label: "on hold",
-    className: "bg-amber-50 text-amber-700",
+  paused: {
+    label: "paused",
+    className: "bg-yellow-100 text-yellow-500",
   },
   completed: {
     label: "completed",
-    className: "bg-blue-50 text-blue-700",
+    className: "bg-blue-100 text-blue-500",
   },
 };
 

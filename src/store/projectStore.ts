@@ -142,7 +142,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
     const allDone = projectTasks.every((t) => t.status === "done");
     const project = get().projects.find((p) => p.id === id);
-    if (!project || project.status === "on_hold") return;
+    if (!project || project.status === "paused") return;
 
     let newStatus: ProjectStatus = allDone ? "completed" : "active";
 

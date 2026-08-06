@@ -25,7 +25,7 @@ export default function ToggleStatusButton() {
   const [isUpdating, setIsUpdating] = React.useState(false);
 
   const project = projects.find((p) => p.id === projectId);
-  const isOnHold = project?.status === "on_hold";
+  const isPaused = project?.status === "paused";
 
   const handleToggleStatus = async () => {
     if (!project) return;
@@ -33,12 +33,12 @@ export default function ToggleStatusButton() {
     setIsUpdating(true);
     try {
       await updateProject(project.id, {
-        status: isOnHold ? "active" : "on_hold",
+        status: isPaused ? "active" : "paused",
       });
       toast.success(
-        isOnHold
+        isPaused
           ? `Project "${project.name}" resumed`
-          : `Project "${project.name}" put on hold`,
+          : `Project "${project.name}" paused`,
       );
     } catch {
       toast.error(
@@ -54,20 +54,20 @@ export default function ToggleStatusButton() {
         <Button
           size="lg"
           className={cn(
-            isOnHold
+            isPaused
               ? "bg-green-50 text-green-500 hover:text-green-600 hover:bg-green-100"
               : "bg-amber-50 text-amber-500 hover:text-amber-600 hover:bg-amber-100",
           )}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
-              key={isOnHold ? "play" : "pause"}
+              key={isPaused ? "play" : "pause"}
               initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
               animate={{ opacity: 1, rotate: 0, scale: 1 }}
               exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
             >
-              {isOnHold ? <Play /> : <Pause />}
+              {isPaused ? <Play /> : <Pause />}
             </motion.span>
           </AnimatePresence>
         </Button>
@@ -75,12 +75,12 @@ export default function ToggleStatusButton() {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {isOnHold ? "Resume Project" : "Put Project on Hold"}
+            {isPaused ? "Resume Project" : "Pause Project"}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {isOnHold
+            {isPaused
               ? "Are you sure you want to resume this project?"
-              : "Are you sure you want to put this project on hold?"}
+              : "Are you sure you want to pause this project?"}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -90,10 +90,10 @@ export default function ToggleStatusButton() {
               <>
                 <Spinner /> Updating...
               </>
-            ) : isOnHold ? (
+            ) : isPaused ? (
               "Resume"
             ) : (
-              "Put on Hold"
+              "Pause"
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

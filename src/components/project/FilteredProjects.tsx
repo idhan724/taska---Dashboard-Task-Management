@@ -18,7 +18,7 @@ export default function FilteredProjects() {
       <TabsList className="mx-6">
         <TabsTrigger value="all">All</TabsTrigger>
         <TabsTrigger value="active">Active</TabsTrigger>
-        <TabsTrigger value="on_hold">On Hold</TabsTrigger>
+        <TabsTrigger value="paused">Paused</TabsTrigger>
         <TabsTrigger value="completed">Completed</TabsTrigger>
       </TabsList>
       {isFetching ? (

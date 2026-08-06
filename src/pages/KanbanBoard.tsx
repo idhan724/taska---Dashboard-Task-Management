@@ -18,7 +18,7 @@ export default function KanbanBoard() {
   const [activeCard, setActiveCard] = React.useState<Task | null>(null);
   const projects = useProjectStore((s) => s.projects);
   const project = projects.find((p) => p.id === projectId);
-  const isOnHold = project?.status === "on_hold";
+  const isPaused = project?.status === "paused";
 
   const projectTasks = tasks.filter((t) => t.project_id === projectId);
   const taskCount = projectTasks.length;
@@ -75,7 +75,7 @@ export default function KanbanBoard() {
           <Progress
             value={percent}
             indicatorClassName={
-              isOnHold
+              isPaused
                 ? "bg-muted-foreground"
                 : getProjectColor(projectColor || "").bg
             }

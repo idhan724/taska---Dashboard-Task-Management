@@ -33,12 +33,12 @@ import { useParams } from "react-router-dom";
 
 interface EditTaskButtonProps {
   task: Task;
-  isOnHold: boolean;
+  isPaused: boolean;
 }
 
 export default function EditTaskButton({
   task,
-  isOnHold,
+  isPaused,
 }: EditTaskButtonProps) {
   const { updateTask } = useTaskStore();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -80,7 +80,7 @@ export default function EditTaskButton({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          disabled={isOnHold}
+          disabled={isPaused}
           className="bg-background text-neutral-400 hover:text-blue-500 hover:bg-blue-50"
           onPointerDown={(e) => e.stopPropagation()}
         >
