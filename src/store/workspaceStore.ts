@@ -256,6 +256,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     if (!isLiveMode) {
       set({
         members: mockMembers.filter((m) => m.workspace_id === workspaceId),
+        isFetching: false,
       });
       return;
     }
