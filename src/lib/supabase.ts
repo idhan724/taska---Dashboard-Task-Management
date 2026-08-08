@@ -6,11 +6,27 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as
   | string
   | undefined;
 
+const MOCK_MODE_KEY = "taska-force-mock-mode";
+
+export function isMockModeForced() {
+  return localStorage.getItem(MOCK_MODE_KEY) === "true";
+}
+
+export function setForceMockMode(value: boolean) {
+  if (value) {
+    localStorage.setItem(MOCK_MODE_KEY, "true");
+  } else {
+    localStorage.removeItem(MOCK_MODE_KEY);
+  }
+  window.location.reload();
+}
+
 const hasCredentials = !!(supabaseUrl && supabaseAnonKey);
 const isBrowserOnline =
   typeof navigator === "undefined" ? true : navigator.onLine;
 
-export const isLiveMode = hasCredentials && isBrowserOnline;
+export const isLiveMode =
+  hasCredentials && !isMockModeForced() && isBrowserOnline;
 
 export function createClient() {
   if (!hasCredentials) {

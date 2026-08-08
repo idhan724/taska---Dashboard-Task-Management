@@ -15,6 +15,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
 import { SiGithub } from "@icons-pack/react-simple-icons";
+import { setForceMockMode } from "@/lib/supabase";
 
 export default function SignInPage() {
   const navigate = useNavigate();
@@ -94,6 +95,9 @@ export default function SignInPage() {
           >
             {isGithubLoading ? <Spinner /> : <SiGithub />}
             Sign in with GitHub
+          </Button>
+          <Button variant="outline" onClick={() => setForceMockMode(true)}>
+            Try demo mode
           </Button>
 
           <div className="flex items-center gap-2">

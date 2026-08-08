@@ -16,6 +16,7 @@ import { useAuthStore } from "@/store/authStore";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { isLiveMode, setForceMockMode } from "@/lib/supabase";
 
 export default function SignOutButton() {
   const { signOut } = useAuthStore();
@@ -45,23 +46,33 @@ export default function SignOutButton() {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will sign you out of your account.
+            {isLiveMode
+              ? "This will sign you out of your account."
+              : "This will exit demo mode."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={(e) => {
-              e.preventDefault();
-              handleSignOut();
-            }}
+            onClick={
+              isLiveMode
+                ? (e) => {
+                    e.preventDefault();
+                    handleSignOut();
+                  }
+                : () => setForceMockMode(false)
+            }
           >
-            {isSigningOut ? (
-              <>
-                <Spinner /> logging out...
-              </>
+            {isLiveMode ? (
+              isSigningOut ? (
+                <>
+                  <Spinner /> logging out...
+                </>
+              ) : (
+                "Logout"
+              )
             ) : (
-              "Logout"
+              "Leave Demo Mode"
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
