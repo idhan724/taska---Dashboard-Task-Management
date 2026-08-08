@@ -65,6 +65,18 @@ export const useAuthStore = create<AuthStore>((set) => ({
               resolve(subscription);
             }
           } catch (err) {
+            if (!navigator.onLine) {
+              set({
+                user: { id: mockCurrentUser.id } as User,
+                profile: mockCurrentUser,
+                isLoading: false,
+                error: null,
+              });
+              clearTimeout(timeoutId);
+              resolve(subscription);
+              return;
+            }
+
             const message =
               err instanceof Error ? err.message : "Failed to initialize";
             set({ error: message });
@@ -77,8 +89,19 @@ export const useAuthStore = create<AuthStore>((set) => ({
       },
     );
 
-    const timeoutPromise = new Promise<undefined>((_resolve, reject) => {
+    const timeoutPromise = new Promise<undefined>((resolve, reject) => {
       timeoutId = setTimeout(() => {
+        if (!navigator.onLine) {
+          set({
+            user: { id: mockCurrentUser.id } as User,
+            profile: mockCurrentUser,
+            isLoading: false,
+            error: null,
+          });
+          resolve(undefined);
+          return;
+        }
+
         const message = "Failed to restore session, please sign in again";
         set({ user: null, profile: null, isLoading: false, error: message });
         reject(new Error(message));
