@@ -77,7 +77,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      <StatsCards stats={stats} isLoading={isFetchingWorkspace} />
+      <StatsCards
+        stats={stats}
+        isLoading={isFetchingWorkspace || isFetchingTasks || isFetchingProjects}
+      />
 
       <TaskOverview
         todo={stats.todo}
