@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import type { WorkspaceMember } from "@/types";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { toast } from "sonner";
+import { isLiveMode } from "@/lib/supabase";
 
 interface RemoveMemberButtonProps {
   member: WorkspaceMember;
@@ -43,7 +44,7 @@ export default function RemoveMemberButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger>
-        <Button>Remove member</Button>
+        <Button disabled={!isLiveMode}>Remove member</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

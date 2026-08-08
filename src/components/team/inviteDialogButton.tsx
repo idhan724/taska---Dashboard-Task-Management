@@ -12,6 +12,7 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
+import { isLiveMode } from "@/lib/supabase";
 
 export default function inviteDialogButton() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -68,7 +69,7 @@ export default function inviteDialogButton() {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button disabled={!isLiveMode}>
           <Plus className="w-4 h-4 mr-2" />
           Invite
         </Button>
