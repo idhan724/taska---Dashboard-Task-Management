@@ -4,6 +4,14 @@ Taska is a workspace-based task management app (similar to Linear/Notion) built 
 
 ---
 
+## 📸 Screenshots
+
+| Board View                                    | Timeline View                           | Analytics                                 |
+| --------------------------------------------- | --------------------------------------- | ----------------------------------------- |
+| ![Dashboard](public/screenshot/dashboard.png) | ![Kanban](public/screenshot/kanban.png) | ![project](public/screenshot/project.png) |
+
+---
+
 ## ✨ Features
 
 - **Multi-workspace** — one account can own or join multiple workspaces, each with separate projects and teams
