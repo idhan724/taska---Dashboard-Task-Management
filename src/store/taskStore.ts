@@ -170,8 +170,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }
 
     try {
-      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", id)
+        .select();
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error("You don't have permission to delete this task.");
+      }
       set((state) => ({ tasks: state.tasks.filter((t) => t.id !== id) }));
     } catch (err) {
       const message =

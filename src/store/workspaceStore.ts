@@ -233,8 +233,15 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
     }
 
     try {
-      const { error } = await supabase.from("workspaces").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("workspaces")
+        .delete()
+        .eq("id", id)
+        .select();
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error("You don't have permission to delete this workspace.");
+      }
 
       await get().fetchWorkspaces();
     } catch (err) {

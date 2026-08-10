@@ -162,8 +162,15 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
 
     try {
-      const { error } = await supabase.from("projects").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", id)
+        .select();
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error("You don't have permission to delete this project.");
+      }
       set((state) => ({ projects: state.projects.filter((t) => t.id !== id) }));
     } catch (err) {
       const message =
